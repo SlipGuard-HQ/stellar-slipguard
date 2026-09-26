@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contribution guide
+    url: https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/CONTRIBUTING.md
+    about: Branch conventions, Wave sprint rules and the review checklist.
+  - name: Security policy
+    url: https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/SECURITY.md
+    about: Report a vulnerability privately. Do not open a public issue.
