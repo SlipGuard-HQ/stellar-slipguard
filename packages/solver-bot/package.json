@@ -1,0 +1,36 @@
+{
+  "name": "@slipguard/solver-bot",
+  "version": "0.1.0",
+  "description": "Reference solver keeper that watches, evaluates and fills SlipGuard intents.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "slipguard-solver": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsc -p tsconfig.build.json && node dist/index.js",
+    "test": "vitest run",
+    "lint": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@slipguard/sdk": "workspace:*",
+    "@stellar/stellar-sdk": "^17.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.4.0",
+    "vitest": "^3.2.4"
+  }
+}
