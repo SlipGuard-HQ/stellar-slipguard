@@ -248,6 +248,11 @@ NETWORK=mainnet DEPLOY_MOCK_TOKENS=false ./scripts/deploy.sh
 Prerequisites: the `stellar` CLI on `PATH`, and an identity configured with
 `stellar keys generate <name>`, or `SOURCE` pointing at one that exists.
 
+A previously deployed testnet set is checked in at
+[`deployments/testnet.json`](../deployments/testnet.json), so you can point the
+solver bot and the SDK at working contract ids before running a deployment of
+your own.
+
 The script creates new contracts on every run. It does not upgrade existing
 ones, and it will not overwrite a deployment on a different network because the
 output file is network-scoped.

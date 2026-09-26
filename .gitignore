@@ -45,3 +45,6 @@ Thumbs.db
 # Misc
 .tmp/
 .turbo/
+
+# Locally installed CLI tools (e.g. the stellar binary fetched for deployment)
+.tools/

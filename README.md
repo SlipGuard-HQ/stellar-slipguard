@@ -64,6 +64,7 @@ stellar-slipguard/
 │   ├── deploy.sh               # deploy + initialize in dependency order
 │   └── create-wave-issues.sh   # create the Wave issue backlog in one run
 ├── docs/                  # protocol, end-user and developer documentation
+├── deployments/           # checked-in testnet contract addresses
 ├── assets/                # banner and other static assets
 ├── .github/               # CI, lint workflow, issue and PR templates
 ├── Cargo.toml             # Rust workspace
@@ -115,6 +116,18 @@ The compiled contracts land in `target/wasm32v1-none/release/`:
 | [End-user guides](./docs/03-end-user-guides.md) | How to trade with an intent, and how to run a solver profitably. |
 | [Developer guide](./docs/04-developer-guide.md) | Setup, SDK reference, the RPC call pattern, configuration and deployment. |
 | [Contract architecture](./docs/05-architecture.md) | Contract responsibilities, dependency graph, storage and TTL policy, and every entry point with its auth and events. |
+
+## Testnet deployment
+
+A live testnet deployment is checked in under [`deployments/`](./deployments/README.md):
+
+| Contract | Address |
+| --- | --- |
+| `SlipGuardRouter` | `CBNWLNZKYA2FASRFVURBBX4JGHXJAZGJAKCKANB4MQGIKI7NXBFB5HON` |
+| Demo XLM (`MockToken`) | `CBW2W4NQ4IY23DH4NCB2YZBNKLWNQPDR53HDBYHM256BLXQZ5ZLR5MFM` |
+| Demo USDC (`MockToken`) | `CB37MCA7VBKY3WFBK2SXLJROT2HTSL4HK4HSX62PT6A5SWVDFYJ2K7PB` |
+
+[Explorer](https://stellar.expert/explorer/testnet/contract/CBNWLNZKYA2FASRFVURBBX4JGHXJAZGJAKCKANB4MQGIKI7NXBFB5HON). The demo tokens are not real assets, and the router is unaudited.
 
 ## Deploying
 

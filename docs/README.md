@@ -16,5 +16,7 @@ are for people who are going to run it, build on it or review its design.
 
 Repository: <https://github.com/SlipGuard-HQ/stellar-slipguard>
 
+A live testnet deployment is recorded in [`deployments/`](../deployments/README.md).
+
 The contracts are unaudited and have not been deployed to mainnet. See
 [SECURITY.md](../SECURITY.md).

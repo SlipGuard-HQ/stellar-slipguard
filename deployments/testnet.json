@@ -1,0 +1,14 @@
+{
+  "network": "testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "rpcUrl": "https://soroban-testnet.stellar.org",
+  "deployedAt": "2026-09-26T00:31:02Z",
+  "source": "scripts/deploy.sh",
+  "admin": "GBBCRFFACYJAJDPV4MGVRSDYSDZKL5AAI3FG2KB454OPWNENWLMN5LB3",
+  "contracts": {
+    "router": "CBNWLNZKYA2FASRFVURBBX4JGHXJAZGJAKCKANB4MQGIKI7NXBFB5HON",
+    "demoTokenXlm": "CBW2W4NQ4IY23DH4NCB2YZBNKLWNQPDR53HDBYHM256BLXQZ5ZLR5MFM",
+    "demoTokenUsdc": "CB37MCA7VBKY3WFBK2SXLJROT2HTSL4HK4HSX62PT6A5SWVDFYJ2K7PB"
+  },
+  "notes": "Demo tokens are MockToken instances and are not real assets. The router is unaudited; do not use it with assets you cannot afford to lose."
+}
