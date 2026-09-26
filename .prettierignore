@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+dist
+**/dist
+target
+**/target
+coverage
+.pnpm-store
+pnpm-lock.yaml
+Cargo.lock
+*.md
+.soroban

@@ -1,0 +1,29 @@
+{
+  "name": "slipguard-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Intent-based conditional order and MEV-resistant slippage protection routing protocol for Stellar and Soroban.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:contracts": "cargo build --target wasm32v1-none --release",
+    "test:contracts": "cargo test --all",
+    "build:contracts:check": "cargo check --all-targets",
+    "format:contracts": "cargo fmt --all",
+    "format:contracts:check": "cargo fmt --all -- --check",
+    "clippy": "cargo clippy --all-targets -- -D warnings",
+    "build:packages": "pnpm -r --filter \"./packages/**\" build",
+    "test:packages": "pnpm -r --filter \"./packages/**\" test",
+    "test": "pnpm test:contracts && pnpm test:packages",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint:packages": "pnpm -r --filter \"./packages/**\" lint",
+    "lint": "pnpm build:packages && pnpm lint:packages && pnpm format:check && cargo clippy --all-targets -- -D warnings"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.0"
+  }
+}

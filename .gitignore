@@ -1,0 +1,47 @@
+# Rust / Cargo
+target/
+**/target/
+*.rs.bk
+*.rlib
+
+# Soroban
+.soroban/
+*.wasm
+!contracts/**/test_*.wasm
+# Failure snapshots written by soroban-sdk testutils
+test_snapshots/
+
+# Node / pnpm
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+*.tsbuildinfo
+.pnpm-store/
+pnpm-debug.log*
+npm-debug.log*
+yarn-error.log*
+
+# Test / coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Deployment output (contract ids per network)
+.deploy/
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Misc
+.tmp/
+.turbo/
