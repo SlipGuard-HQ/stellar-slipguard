@@ -1,3 +1,5 @@
+![SlipGuard](./assets/banner.svg)
+
 # SlipGuard
 
 **Intent-based conditional orders with enforced slippage protection, built natively for Stellar and Soroban.**
@@ -51,7 +53,7 @@ The trader's funds never leave their wallet until a fill succeeds, and the pull 
 ## Repository layout
 
 ```
-slipguard/
+stellar-slipguard/
 ├── contracts/
 │   ├── router/            # SlipGuardRouter: hashing, cancellation, settlement
 │   └── mock_token/        # SEP-41 token used by the test suite
@@ -62,6 +64,7 @@ slipguard/
 │   ├── deploy.sh               # deploy + initialize in dependency order
 │   └── create-wave-issues.sh   # create the Wave issue backlog in one run
 ├── docs/                  # protocol, end-user and developer documentation
+├── assets/                # banner and other static assets
 ├── .github/               # CI, lint workflow, issue and PR templates
 ├── Cargo.toml             # Rust workspace
 ├── pnpm-workspace.yaml    # pnpm workspace
@@ -74,7 +77,7 @@ Requires Rust (stable, with the `wasm32v1-none` target), Node 20 or newer, and p
 
 ```bash
 git clone https://github.com/SlipGuard-HQ/stellar-slipguard.git
-cd slipguard
+cd stellar-slipguard
 
 # Rust toolchain and WASM target (rust-toolchain.toml pins these)
 rustup target add wasm32v1-none
@@ -111,6 +114,7 @@ The compiled contracts land in `target/wasm32v1-none/release/`:
 | [Protocol mechanics](./docs/02-protocol-mechanics.md) | Intent lifecycle, settlement order, and the fee and slippage math with worked numbers. |
 | [End-user guides](./docs/03-end-user-guides.md) | How to trade with an intent, and how to run a solver profitably. |
 | [Developer guide](./docs/04-developer-guide.md) | Setup, SDK reference, the RPC call pattern, configuration and deployment. |
+| [Contract architecture](./docs/05-architecture.md) | Contract responsibilities, dependency graph, storage and TTL policy, and every entry point with its auth and events. |
 
 ## Deploying
 
@@ -249,9 +253,19 @@ The contracts are unaudited and have not been deployed to Stellar mainnet. Do no
 | --- | --- | --- |
 | SlipGuard HQ | Protocol design, contracts, tooling | [@SlipGuard-HQ](https://github.com/SlipGuard-HQ) |
 
+Feature requests and integration questions are welcome on the issue tracker. There
+is no private support channel; keeping the discussion public keeps the answers
+useful to the next person.
+
 ## Contributing
 
-Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request. Every PR should reference an issue, pass CI, and include tests for new behaviour.
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request. Every PR should reference an issue, pass CI, and include tests for new behaviour. The full planned backlog lives in the [issue tracker](https://github.com/SlipGuard-HQ/stellar-slipguard/issues), labelled by area and difficulty.
+
+## Community
+
+- **Questions, ideas and integration help:** open a [GitHub issue](https://github.com/SlipGuard-HQ/stellar-slipguard/issues) or reach the maintainers through the [@SlipGuard-HQ](https://github.com/SlipGuard-HQ) organisation.
+- **Soroban development questions:** the [Stellar developer Discord](https://discord.gg/stellardev) is where the ecosystem answers contract and RPC questions.
+- **Security reports:** do not open a public issue. Follow [SECURITY.md](./SECURITY.md).
 
 ## License
 

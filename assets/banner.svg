@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="SlipGuard: intent-based conditional orders with enforced slippage protection on Stellar">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0e1a"/>
+      <stop offset="1" stop-color="#151033"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7d00ff"/>
+      <stop offset="1" stop-color="#00c2c7"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="300" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="6" fill="url(#accent)"/>
+
+  <!-- shield mark -->
+  <g transform="translate(80 74)">
+    <path d="M76 0 L152 26 V92 c0 42 -32 68 -76 82 C32 160 0 134 0 92 V26 Z" fill="none" stroke="url(#accent)" stroke-width="6"/>
+    <path d="M46 88 L68 110 L108 62" fill="none" stroke="#e8e6ff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <text x="290" y="140" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="76" font-weight="700" fill="#f5f3ff">SlipGuard</text>
+  <text x="292" y="186" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="27" fill="#b7b2d6">Intent-based conditional orders with enforced slippage protection</text>
+  <text x="292" y="222" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="23" fill="#00c2c7">Built on Stellar &#183; Soroban</text>
+</svg>
