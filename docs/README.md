@@ -2,6 +2,8 @@
 
 Intent-based conditional orders with enforced slippage protection on Stellar.
 
+Published site: <https://slipguard-hq.github.io/stellar-slipguard/>
+
 This documentation has two audiences. The first three pages explain what
 SlipGuard is and how it behaves, without assuming you read Rust. The last three
 are for people who are going to run it, build on it or review its design.

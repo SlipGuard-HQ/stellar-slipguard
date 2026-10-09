@@ -20,10 +20,16 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint:packages": "pnpm -r --filter \"./packages/**\" lint",
-    "lint": "pnpm build:packages && pnpm lint:packages && pnpm format:check && cargo clippy --all-targets -- -D warnings"
+    "lint": "pnpm build:packages && pnpm lint:packages && pnpm format:check && cargo clippy --all-targets -- -D warnings",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
+    "mermaid": "^11.17.2",
     "prettier": "^3.2.5",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17"
   }
 }

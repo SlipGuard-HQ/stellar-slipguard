@@ -35,6 +35,10 @@ coverage/
 # Deployment output (contract ids per network)
 .deploy/
 
+# VitePress documentation build output and cache
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
 # Editors / OS
 .DS_Store
 Thumbs.db

@@ -9,6 +9,7 @@
 [![Soroban SDK](https://img.shields.io/badge/Soroban%20SDK-26-000000.svg)](https://crates.io/crates/soroban-sdk)
 [![CI](https://github.com/SlipGuard-HQ/stellar-slipguard/actions/workflows/ci.yml/badge.svg)](https://github.com/SlipGuard-HQ/stellar-slipguard/actions/workflows/ci.yml)
 [![pnpm workspace](https://img.shields.io/badge/pnpm-workspace-F69220.svg)](./pnpm-workspace.yaml)
+[![Docs](https://img.shields.io/badge/docs-slipguard--hq.github.io-7D00FF.svg)](https://slipguard-hq.github.io/stellar-slipguard/)
 
 SlipGuard lets a trader express an order as a signed, off-chain **intent** ("sell exactly this much XLM, and I will not accept less than this much USDC, and I will not wait past this deadline") and lets any solver fill it on chain. The router is the only component that moves funds, it is non-custodial, and it reverts any fill that breaks the trader's stated terms.
 
@@ -108,6 +109,10 @@ The compiled contracts land in `target/wasm32v1-none/release/`:
 - `slipguard_mock_token.wasm`
 
 ## Documentation
+
+**Live site:** <https://slipguard-hq.github.io/stellar-slipguard/>
+
+The same pages are also readable as plain Markdown in [`docs/`](./docs/README.md):
 
 | Page | Contents |
 | --- | --- |
