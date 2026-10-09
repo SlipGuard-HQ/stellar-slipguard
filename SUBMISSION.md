@@ -58,7 +58,8 @@ an area and a difficulty tier. 17 issues were created in the initial batch.
 | Item | Link | Status |
 | --- | --- | --- |
 | Repository | <https://github.com/SlipGuard-HQ/stellar-slipguard> | Live |
-| Documentation | <https://github.com/SlipGuard-HQ/stellar-slipguard/tree/main/docs> | Live |
+| Documentation | <https://slipguard-hq.github.io/stellar-slipguard/> | Live |
+| Documentation source | <https://github.com/SlipGuard-HQ/stellar-slipguard/tree/main/docs> | Live |
 | Release | <https://github.com/SlipGuard-HQ/stellar-slipguard/releases/tag/v0.1.0> | Live |
 | Testnet router | <https://stellar.expert/explorer/testnet/contract/CBNWLNZKYA2FASRFVURBBX4JGHXJAZGJAKCKANB4MQGIKI7NXBFB5HON> | Live |
 | Deployment record | [`deployments/`](./deployments/README.md) | Live |

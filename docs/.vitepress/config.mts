@@ -13,10 +13,10 @@ export default withMermaid(
     base: "/stellar-slipguard/",
     lang: "en-US",
 
-    // The docs link out to repository files that live outside this folder
-    // (SECURITY.md, deployments/). They are valid on GitHub but not routes in
-    // this site, so they are not treated as dead links.
-    ignoreDeadLinks: true,
+    // Links to files outside docs/ (SECURITY.md, CONTRIBUTING.md, ...) point at
+    // their GitHub URLs because they have no route on this site. Leaving the
+    // dead-link check on keeps a broken page link from shipping.
+    ignoreDeadLinks: false,
     // docs/README.md is the GitHub-facing table of contents; the site root is
     // docs/index.md, so the README is not built as a page.
     srcExclude: ["README.md"],

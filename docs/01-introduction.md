@@ -86,6 +86,6 @@ token deployed on Soroban, so the router does not need asset-specific code.
 - It is not an order book. There is no on-chain matching engine.
 - It cannot guarantee a fill. It guarantees that any fill which happens obeys
   the trader's terms, and it removes the counterparty risk from the fill itself.
-- It is not audited. See [SECURITY.md](../SECURITY.md).
+- It is not audited. See [SECURITY.md](https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/SECURITY.md).
 
 Next: [Protocol mechanics](./02-protocol-mechanics.md).

@@ -229,7 +229,7 @@ formats and throws `ConfigError` on anything malformed.
 | `DRY_RUN` | no | `false` | Evaluate and log without submitting. |
 | `ALLOW_HTTP` | no | `false` | Permits plain HTTP RPC endpoints for local sandboxes. |
 
-See [`.env.example`](../.env.example) for a copy-pasteable template.
+See [`.env.example`](https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/.env.example) for a copy-pasteable template.
 
 ## Deploying
 
@@ -249,7 +249,7 @@ Prerequisites: the `stellar` CLI on `PATH`, and an identity configured with
 `stellar keys generate <name>`, or `SOURCE` pointing at one that exists.
 
 A previously deployed testnet set is checked in at
-[`deployments/testnet.json`](../deployments/testnet.json), so you can point the
+[`deployments/testnet.json`](https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/deployments/testnet.json), so you can point the
 solver bot and the SDK at working contract ids before running a deployment of
 your own.
 
@@ -284,7 +284,7 @@ so a green local run predicts a green CI run.
 
 ## Contributing
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for branch conventions, the Wave
+See [CONTRIBUTING.md](https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/CONTRIBUTING.md) for branch conventions, the Wave
 sprint rules, and the coding standards. The short version: no `unwrap()` outside
 tests, no floating point in contract math, state written before external calls,
 and tests for new behaviour.
