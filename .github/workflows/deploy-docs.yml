@@ -38,11 +38,12 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      # The Pages site must be created once by a repository admin
+      # (Settings -> Pages -> Build and deployment -> Source: GitHub Actions).
+      # The default Actions token cannot administer the repository, so an
+      # `enablement: true` input here would only fail with a 403.
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          # Create the Pages site on the first run if it does not exist yet.
-          enablement: true
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
