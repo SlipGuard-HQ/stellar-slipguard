@@ -1,8 +1,8 @@
 ---
-name: "Stellar integration change (medium)"
+name: "Stellar integration change"
 about: A multi-file change to the SDK, the solver bot or the deployment tooling.
 title: "feat(<scope>): <short description>"
-labels: ["difficulty: medium"]
+labels: ["enhancement"]
 ---
 
 ## Summary

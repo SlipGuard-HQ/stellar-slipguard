@@ -104,8 +104,9 @@ days; you are welcome to reopen them.
 
 The backlog is grouped by Stellar surface (`area: contracts`, `area: sdk`,
 `area: solver-bot`, `area: stellar-rpc`, `area: soroban-auth`, `area: ci`,
-`area: docs`) and sized with `difficulty: trivial`, `difficulty: medium` and
-`difficulty: high`. To keep review fair:
+`area: docs`) and typed with GitHub's standard labels (`enhancement`, `bug`,
+`documentation`, `testing`). The smallest well-scoped tasks also carry
+`good first issue`. To keep review fair:
 
 1. **Claim before you build.** Comment on the issue and wait for a maintainer to
    assign it. Do not open a PR for an unassigned issue.
