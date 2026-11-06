@@ -15,15 +15,19 @@ rustup target add wasm32v1-none
 pnpm install
 ```
 
+The `stellar` CLI is the only tool that talks to a network besides Stellar RPC;
+install it from the [Stellar CLI repository](https://github.com/stellar/stellar-cli)
+when you are ready to deploy.
+
 ## Repository layout
 
 ```
 contracts/router        SlipGuardRouter: hashing, cancellation, settlement
 contracts/mock_token    SEP-41 token used by the test suite
 packages/sdk            @slipguard/sdk: build, hash and submit intents
-packages/solver-bot     @slipguard/solver-bot: reference keeper daemon
-scripts/deploy.sh       Deploys and initializes in dependency order
-scripts/create-wave-issues.sh  Creates the Wave issue backlog in one run
+packages/solver-bot     @slipguard/solver-bot: reference solver daemon
+scripts/deploy.sh       Deploys Stellar Asset Contracts and the router
+scripts/create-stellar-backlog.sh  Creates the Stellar-scoped issue backlog
 docs/                   This documentation set
 ```
 
@@ -221,7 +225,7 @@ formats and throws `ConfigError` on anything malformed.
 | `POLL_INTERVAL_MS` | no | `5000` | Positive integer. |
 | `START_LEDGER` | no | tip of the chain | First ledger scanned for router events. |
 | `MIN_PROFIT` | no | `0` | Minimum net profit, in buy token units. |
-| `GAS_COST` | no | `0` | Estimated transaction cost, in buy token units. |
+| `TX_COST` | no | `0` | Estimated fill transaction cost, in buy token units: base fee plus Soroban resource fee. |
 | `MAX_FEE_STROOPS` | no | `100000` | Transaction fee ceiling. |
 | `TX_TIMEOUT_MS` | no | `60000` | How long to wait for ledger inclusion. |
 | `TOKEN_PRICES` | no | `{}` | JSON object of token contract id to USD price. |
@@ -233,17 +237,28 @@ See [`.env.example`](https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main
 
 ## Deploying
 
-`scripts/deploy.sh` deploys in dependency order: the router first, then
-`init(admin)`, then the demo SEP-41 tokens, then optional demo balances. It
-writes every resolved id to `.deploy/contracts.<network>.env` and prints a
-copy-pasteable summary.
+`scripts/deploy.sh` deploys in dependency order: the Stellar Asset Contracts for
+the pair (or the test-only SEP-41 tokens), then the router, then `init(admin)`,
+then optional demo balances. It writes every resolved id to
+`.deploy/contracts.<network>.env` and prints a copy-pasteable summary.
 
 ```bash
 pnpm build:contracts
 DRY_RUN=true ./scripts/deploy.sh              # print the plan
-./scripts/deploy.sh                           # deploy to testnet
-NETWORK=mainnet DEPLOY_MOCK_TOKENS=false ./scripts/deploy.sh
+
+# Real Stellar assets, resolved through `stellar contract asset deploy`.
+SELL_ASSET=native \
+BUY_ASSET="USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5" \
+./scripts/deploy.sh
+
+# Test-only fallback: two SEP-41 MockToken instances, no Stellar assets needed.
+DEPLOY_MOCK_TOKENS=true ./scripts/deploy.sh
 ```
+
+`SELL_ASSET` accepts `native` for XLM or `CODE:ISSUER` for an issued asset. The
+script calls `stellar contract asset deploy`, which returns the Stellar Asset
+Contract id for that asset, so the router settles against the contract that
+already holds the asset rather than a stand-in.
 
 Prerequisites: the `stellar` CLI on `PATH`, and an identity configured with
 `stellar keys generate <name>`, or `SOURCE` pointing at one that exists.
@@ -257,15 +272,17 @@ The script creates new contracts on every run. It does not upgrade existing
 ones, and it will not overwrite a deployment on a different network because the
 output file is network-scoped.
 
-## The Wave issue backlog
+## The Stellar-scoped issue backlog
 
 ```bash
-DRY_RUN=true ./scripts/create-wave-issues.sh   # print the plan
-./scripts/create-wave-issues.sh                # create labels and issues
+DRY_RUN=true ./scripts/create-stellar-backlog.sh   # print the plan
+./scripts/create-stellar-backlog.sh                # create labels and issues
 ```
 
-It creates the labels (`wave-ready`, `difficulty: *`, `area: *`) and the issue
-backlog, each with a summary, scoped acceptance criteria and a tech stack line.
+It creates the labels (`area: contracts`, `area: sdk`, `area: solver-bot`,
+`area: ci`, `area: docs`, `area: stellar-rpc`, `difficulty: *`) and the issue
+backlog. Every issue carries a summary, the Stellar or Soroban surface it
+touches, scoped acceptance criteria and a tech stack line.
 Labels are created with `--force`, so re-running is safe for labels. Issues are
 not de-duplicated, so run it once.
 
@@ -284,7 +301,7 @@ so a green local run predicts a green CI run.
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/CONTRIBUTING.md) for branch conventions, the Wave
-sprint rules, and the coding standards. The short version: no `unwrap()` outside
+See [CONTRIBUTING.md](https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/CONTRIBUTING.md) for branch conventions, the
+review rules, and the coding standards. The short version: no `unwrap()` outside
 tests, no floating point in contract math, state written before external calls,
 and tests for new behaviour.

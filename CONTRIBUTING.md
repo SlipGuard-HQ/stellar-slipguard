@@ -1,13 +1,16 @@
 # Contributing to SlipGuard
 
-Thanks for taking the time to contribute. This repository is part of the Stellar
-Wave program, so the process below is deliberately explicit: clear issues,
-small pull requests, and tests that a reviewer can run.
+Thanks for taking the time to contribute. SlipGuard is a Stellar and Soroban
+project: one Soroban contract settles, a TypeScript SDK talks to it over Stellar
+RPC, and a reference solver submits fills. The process below is deliberately
+explicit, because a contract change is a funds-safety change.
 
 ## Before you start
 
 1. Read the README [contract reference](./README.md#contract-reference) so you
-   know which entry point you are changing.
+   know which entry point you are changing, and the
+   [Stellar integration map](./docs/06-stellar-integration.md) so you know which
+   Stellar primitive your change touches.
 2. Find or open an issue. Work that is not attached to an issue will not be
    reviewed.
 3. Say so on the issue that you are taking it, so two people do not duplicate
@@ -35,6 +38,25 @@ pnpm lint:packages
 pnpm test:packages
 ```
 
+## Stellar and Soroban surface rules
+
+This repository has no EVM component and no chain-agnostic layer. Contributions
+must keep it that way, and must say which Stellar surface they touch.
+
+| If you touch | Then you must |
+| --- | --- |
+| `Address::require_auth()` or authorization entries | Name the invocation and argument set the entry is scoped to, and test the rejection when any field changes |
+| Storage keys or `extend_ttl` | Update the storage table in `docs/05-architecture.md` and state the TTL implication |
+| `#[contracttype]` structs or enums | Update both the Rust and the SDK `ScVal` encoders, and the shared hash vector |
+| SEP-41 or Stellar Asset Contract calls | Test against `MockToken` and state which real asset contract id the path targets |
+| Stellar RPC endpoints | Keep reads as `simulateTransaction` and writes as simulate/assemble/send/poll |
+| `scripts/deploy.sh` | Verify the `stellar` CLI subcommand exists in the pinned CLI version and that `DRY_RUN=true` stays accurate |
+| Documentation | Use Stellar terminology: ledger, stroops, Soroban resource fee, SEP-41, Stellar Asset Contract |
+
+Words to avoid: gas, wei, EVM address, allowance (except when describing the
+SEP-41 `allowance` function itself), smart contract language other than Rust and
+Soroban.
+
 ## Branch conventions
 
 Branch off `main` and use one of these prefixes:
@@ -43,7 +65,7 @@ Branch off `main` and use one of these prefixes:
 | --- | --- |
 | `feat/` | New functionality, e.g. `feat/router-partial-fills` |
 | `fix/` | Bug fixes, e.g. `fix/sdk-i128-encoding` |
-| `wave/` | Work claimed from a Wave-labelled issue, e.g. `wave/42-emit-cancel-reason` |
+| `test/` | Test-only changes, e.g. `test/ttl-boundaries` |
 | `docs/` | Documentation only |
 | `chore/` | Tooling, CI, dependency bumps |
 
@@ -78,28 +100,29 @@ Reviewers aim for a first response within 48 hours. Stale PRs (no activity from
 the author for seven days) are marked stale and closed after a further seven
 days; you are welcome to reopen them.
 
-## Stellar Wave sprint guidelines
+## Claiming work
 
-Wave runs in short cycles. To keep points fair for everyone:
+The backlog is grouped by Stellar surface (`area: contracts`, `area: sdk`,
+`area: solver-bot`, `area: stellar-rpc`, `area: soroban-auth`, `area: ci`,
+`area: docs`) and sized with `difficulty: trivial`, `difficulty: medium` and
+`difficulty: high`. To keep review fair:
 
 1. **Claim before you build.** Comment on the issue and wait for a maintainer to
    assign it. Do not open a PR for an unassigned issue.
 2. **One issue at a time.** Finish and land your current issue before claiming
    another, unless a maintainer explicitly says otherwise.
-3. **Ship within the sprint.** If you cannot land the change in the current
-   cycle, say so on the issue so someone else can pick it up.
-4. **Issues carry a difficulty label**: `difficulty: trivial 100pts`,
-   `difficulty: medium 150pts`, `difficulty: high 200pts`. Points are awarded on
-   a merged, reviewed PR, not on an opened one.
-5. **Tests are not optional.** A PR without tests for new behaviour will be sent
+3. **Say if you are stuck.** If you cannot land the change, report it on the
+   issue so someone else can pick it up.
+4. **Tests are not optional.** A PR without tests for new behaviour will be sent
    back, regardless of how small the change is.
-6. **No drive-by reformatting.** Prettier and rustfmt are configured; run them,
+5. **No drive-by reformatting.** Prettier and rustfmt are configured; run them,
    but do not reformat files you did not otherwise change.
 
 ## Coding standards
 
-### Rust (contracts)
+### Rust (Soroban contracts)
 
+- `#![no_std]` stays. No standard library, no floating point, no `std` types.
 - No `unwrap()` or `expect()` outside test code. Handle `Option` and `Result`
   explicitly.
 - No floating point. All ratios are integer basis points over `i128`.
@@ -107,7 +130,10 @@ Wave runs in short cycles. To keep points fair for everyone:
   overflows as `SlipGuardError::MathOverflow`.
 - Write state before making external calls (checks-effects-interactions).
 - Every public entry point needs doc comments explaining auth and failure modes.
-- Extend persistent TTLs whenever you write persistent state.
+- Extend persistent TTLs whenever you write persistent state, and document the
+  threshold and extension you chose.
+- Authorization is `require_auth()` inside the function, never an assumption
+  about the caller.
 
 ### TypeScript (SDK and solver)
 
@@ -118,11 +144,14 @@ Wave runs in short cycles. To keep points fair for everyone:
 - No `console.log` in library code; the bot uses the structured logger.
 - Keep pure logic (hashing, encoding, profitability math) free of I/O so it can
   be unit tested without a network.
+- Network access goes through `@stellar/stellar-sdk` `rpc.Server`, not `fetch`,
+  except for the intent feed.
 
 ## Reporting bugs
 
 Open an issue with the reproduction steps, the exact commands you ran, and the
-full error output. If it is a security issue, do not open a public issue. See
+full error output. Include the network (testnet, futurenet, mainnet) and the
+contract id. If it is a security issue, do not open a public issue. See
 [SECURITY.md](./SECURITY.md).
 
 ## License

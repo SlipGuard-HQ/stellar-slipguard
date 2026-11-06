@@ -10,7 +10,12 @@ different things.
 
 An intent is a set of terms, not a transfer. Signing it does not move anything.
 Your tokens stay in your account until a solver fills the order, and that fill
-can only happen with your authorization attached to it.
+can only happen with your Soroban authorization entry attached to it.
+
+The two token fields are Stellar contract ids (`C...`). For XLM that is the
+Stellar Asset Contract for the native asset; for an issued asset it is that
+asset's Stellar Asset Contract. Any other SEP-41 token on Soroban works the same
+way.
 
 The tradeoff is that your authorization is specific. If you sign an intent that
 trades 10 XLM, a solver cannot use your signature to trade 100 XLM instead. If
@@ -84,10 +89,10 @@ You have two options.
 
 1. **Sign at fill time.** The solver assembles the fill and asks you to sign.
    You are online and involved in every fill. Simple, but it needs you present.
-2. **Sign an authorization entry up front.** You sign an entry scoped to that
-   exact intent, with a validity window measured in ledgers, and hand it to
-   whoever wants to fill. You do not need to be online when the fill happens,
-   and the solver cannot alter the terms.
+2. **Sign an authorization entry up front.** You sign a Soroban authorization
+   entry scoped to that exact intent, with a validity window measured in
+   ledgers, and hand it to whoever wants to fill. You do not need to be online
+   when the fill happens, and the solver cannot alter the terms.
 
 Both are non-custodial. Never give anyone your secret key. If a solver asks for
 it, that is not SlipGuard and you should walk away.
@@ -106,7 +111,8 @@ your net cost   = actual_buy_amount - your fee, in the buy token
 ```
 
 Your profit is the difference between what the sell tokens are worth to you and
-your net cost, minus transaction cost.
+your net cost, minus the transaction cost: the 100-stroop base fee per operation
+plus the Soroban resource fee for the CPU and I/O the fill actually uses.
 
 ### Worked example
 
@@ -135,8 +141,9 @@ The check the reference bot performs, in order:
 3. Subtract your net cost and your transaction cost. If the remainder is above
    your configured minimum, submit.
 
-The reference bot's `GAS_COST` and `MIN_PROFIT` are both denominated in buy
-token units, so the comparison is a single integer subtraction.
+The reference bot's `TX_COST` and `MIN_PROFIT` are both denominated in buy
+token units, so the comparison is a single integer subtraction. `TX_COST` should
+include both the Stellar base fee and the Soroban resource fee.
 
 ### What a revert costs you
 
@@ -163,6 +170,11 @@ cp .env.example .env
 DRY_RUN=true pnpm --filter @slipguard/solver-bot start
 ```
 
+`ROUTER_CONTRACT_ID` is the deployed Soroban contract id of `SlipGuardRouter`,
+and `SOLVER_SECRET_KEY` is a Stellar `S...` secret seed. The bot signs every
+fill for the network named by `STELLAR_NETWORK`, or for the passphrase in
+`NETWORK_PASSPHRASE` when you point it at a custom RPC endpoint.
+
 Read the `evaluated intent` log lines. Each has `profitable`, `reason`,
 `netProfit` and `fillAmount`. If the bot says `missing price for sell or buy
 token`, your `TOKEN_PRICES` table is incomplete for the pair.
@@ -175,7 +187,7 @@ are willing to risk, fund it with the buy token, and switch `DRY_RUN=false`.
 | Variable | Why it matters |
 | --- | --- |
 | `MIN_PROFIT` | Your floor, in buy token units. The single knob that decides how aggressive you are. |
-| `GAS_COST` | Your estimate of transaction cost, in buy token units. Set it honestly; it is the difference between a profitable bot and a busy one. |
+| `TX_COST` | Your estimate of the fill's total transaction cost, in buy token units: base fee plus Soroban resource fee. Set it honestly; it is the difference between a profitable bot and a busy one. |
 | `TOKEN_PRICES` | How the bot values the sell token. A stale or wrong table produces confidently wrong decisions. |
 | `MAX_FEE_STROOPS` | The ceiling on what you will pay per transaction. |
 | `POLL_INTERVAL_MS` | Faster polling means less stale data and more RPC load. |

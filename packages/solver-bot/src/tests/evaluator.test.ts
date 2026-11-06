@@ -85,7 +85,7 @@ describe("evaluateIntent", () => {
       intent: makeIntent(),
       fillAmount: 1_000_000n,
       marketValueOfSell: 1_200_000n,
-      gasCost: 20_000n,
+      txCost: 20_000n,
       minProfit: 0n,
       now: NOW,
     });
@@ -99,7 +99,7 @@ describe("evaluateIntent", () => {
       intent: makeIntent(),
       fillAmount: 1_000_000n,
       marketValueOfSell: 900_000n,
-      gasCost: 20_000n,
+      txCost: 20_000n,
       minProfit: 0n,
       now: NOW,
     });
@@ -113,7 +113,7 @@ describe("evaluateIntent", () => {
       intent: makeIntent(),
       fillAmount: 1_000_000n,
       marketValueOfSell: 1_200_000n,
-      gasCost: 20_000n,
+      txCost: 20_000n,
       minProfit: 200_000n,
       now: NOW,
     });
@@ -127,7 +127,7 @@ describe("evaluateIntent", () => {
       intent: makeIntent({ solverFeeBps: 500 }),
       fillAmount: 1_000_000n,
       marketValueOfSell: 10_000_000n,
-      gasCost: 0n,
+      txCost: 0n,
       minProfit: 0n,
       now: NOW,
     });
@@ -154,7 +154,7 @@ describe("evaluateFromPrices", () => {
       intent: makeIntent(),
       fillAmount: 1_000_000n,
       prices: { [SELL_TOKEN]: 2, [BUY_TOKEN]: 1 },
-      gasCost: 10_000n,
+      txCost: 10_000n,
       minProfit: 0n,
       now: NOW,
     });
@@ -170,7 +170,7 @@ describe("evaluateFromPrices", () => {
       intent: makeIntent(),
       fillAmount: 1_000_000n,
       prices: { [SELL_TOKEN]: 1 },
-      gasCost: 0n,
+      txCost: 0n,
       minProfit: 0n,
       now: NOW,
     });

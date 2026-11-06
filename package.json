@@ -2,7 +2,7 @@
   "name": "slipguard-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Intent-based conditional order and MEV-resistant slippage protection routing protocol for Stellar and Soroban.",
+  "description": "Slippage-protected conditional orders, settled by Soroban contracts on Stellar and driven by Stellar RPC.",
   "license": "MIT",
   "engines": {
     "node": ">=20"

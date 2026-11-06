@@ -7,6 +7,11 @@ Stellar mainnet, and no third party has reviewed the Rust code. Treat every
 contract in this repository as experimental. Do not move assets you cannot
 afford to lose.
 
+The protocol settles SEP-41 tokens, including the Stellar Asset Contract for XLM
+and issued assets. A bug in the router can therefore move real balances on the
+network it is deployed to, which is why the contracts stay testnet-only until a
+review has happened.
+
 The TypeScript packages (`@slipguard/sdk`, `@slipguard/solver-bot`) are a
 reference implementation. The solver bot handles a secret key; review it before
 you run it against a funded account.
@@ -23,26 +28,36 @@ you run it against a funded account.
 
 In scope:
 
-- `contracts/router`: intent hashing, authorization, settlement, fee and
+- `contracts/router`: intent hashing, Soroban authorization, settlement, fee and
   slippage math, storage and TTL handling.
-- `contracts/mock_token`: only as test infrastructure; it is never intended for
-  deployment as a real asset.
-- `packages/sdk`: intent validation, canonical encoding and hashing, and the
-  RPC client.
-- `packages/solver-bot`: profitability checks, authorization handling and key
-  management.
+- `contracts/mock_token`: the SEP-41 interface implementation, only as test
+  infrastructure; it is never intended for deployment as a real asset.
+- `packages/sdk`: intent validation, canonical `ScVal` encoding and hashing, and
+  the Stellar RPC client.
+- `packages/solver-bot`: profitability checks, Soroban authorization entry
+  handling, and Stellar key management.
+- `scripts/deploy.sh`: Stellar Asset Contract resolution, admin assignment and
+  deployment order.
 
 Particularly interesting classes of issue:
 
-- A fill that moves funds without both the solver's and the trader's
+- A fill that moves funds without both the solver's and the trader's Soroban
   authorization.
+- A Soroban authorization entry that can be replayed across intents, ledgers or
+  networks, or reused after its arguments change.
 - A fill that bypasses the deadline, `min_buy_amount`, or `max_slippage_bps`
-  check, including through rounding in the basis-point math.
+  check, including through rounding in the basis-point math, or a deadline check
+  that trusts a client-supplied timestamp instead of the ledger.
 - Replay of an intent through the nonce or the intent hash (for example, two
   distinct intents that collapse to the same hash).
 - A way for the solver to make the trader receive less than the terms allow.
 - Any mismatch between the SDK's `hashIntent` and the contract's
   `get_intent_hash`, which would break the assumption that the two agree.
+- Storage or TTL handling that lets an intent be filled after its state is
+  archived, or that weakens the `(trader, nonce)` replay guard.
+- Deployment problems: an admin assigned to the wrong key, a router deployed
+  against the wrong network passphrase, or demo `MockToken` contracts presented
+  as real Stellar assets.
 - Key leakage or credential handling problems in the solver bot.
 
 Out of scope:

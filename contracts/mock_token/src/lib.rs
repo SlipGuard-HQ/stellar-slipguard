@@ -9,7 +9,9 @@
 //!
 //! It is intentionally simple: instance storage for metadata, persistent
 //! storage for balances and allowances, and an admin-gated `mint` for test
-//! funding. Do not deploy this on mainnet as a real asset.
+//! funding. Do not deploy this on mainnet as a real asset: production assets use
+//! the Stellar Asset Contract, which the router reaches through the same
+//! [`soroban_sdk::token::TokenClient`].
 
 use soroban_sdk::{
     contract, contractimpl, contracttype, token::TokenInterface, Address, Env, MuxedAddress, String,

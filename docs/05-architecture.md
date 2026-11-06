@@ -2,7 +2,9 @@
 
 This is the written specification the contracts were built from, checked against
 the code in `contracts/`. Every function listed here maps to a step in a real
-user flow. Nothing is included "just in case".
+user flow. Nothing is included "just in case". Each contract is a `#![no_std]`
+Soroban contract with no runtime other than the Stellar host; the primitive-by-
+primitive dependency list is in [Stellar integration map](./06-stellar-integration.md).
 
 ## Contracts and single responsibilities
 
@@ -15,7 +17,8 @@ exercise settlement against a real SEP-41 token.
 | `contracts/mock_token` | `MockToken` | A minimal SEP-41 token: metadata, balances, allowances, burning, admin minting | Anything protocol-specific |
 
 `MockToken` is test infrastructure. It is never intended for deployment as a
-real asset, and it holds no protocol logic.
+real asset, and it holds no protocol logic. Real deployments settle against
+Stellar Asset Contracts; see [Deploying](./04-developer-guide.md#deploying).
 
 ## Dependency graph
 
@@ -135,10 +138,11 @@ backlog rather than a half-built feature.
 | On-chain order book | The intent is a signed message, not a stored order. Matching happens off-chain. |
 | Price oracle | The router enforces the trader's own floor and tolerance. It never needs to know a market price. |
 | Liquidity vault | The solver brings the other side. The router never holds inventory between calls. |
-| Partial fills | One fill per intent in v0.1. Tracked as a high-tier issue. |
-| Pause / circuit breaker | v0.1 has no admin power over settlement. Tracked as a medium-tier issue. |
-| Upgrade entry point | Not in v0.1. Would need its own design and testing. |
+| Partial fills | One fill per intent in v0.1. Tracked as an issue in the Stellar-scoped backlog. |
+| Pause / circuit breaker | v0.1 has no admin power over settlement. Tracked as an issue in the backlog. |
+| Upgrade entry point | Not in v0.1. Would need its own design and testing against Soroban's upgrade and TTL rules. |
 | Protocol fee | Only the solver fee exists. A protocol fee would need a second basis-point field and its own accounting. |
+| EVM or chain-agnostic compatibility layer | The auth model, storage model and fee model are Soroban-specific. Abstracting over them would be a second protocol, not this one. |
 
 Keeping the admin's power at zero over live settlement is intentional. In v0.1
 the admin is recorded at initialization and otherwise has no effect on any fill,
