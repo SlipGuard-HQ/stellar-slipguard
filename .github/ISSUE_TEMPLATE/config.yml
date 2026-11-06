@@ -2,7 +2,10 @@ blank_issues_enabled: true
 contact_links:
   - name: Contribution guide
     url: https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/CONTRIBUTING.md
-    about: Branch conventions, Wave sprint rules and the review checklist.
+    about: Branch conventions, Stellar surface rules and the review checklist.
+  - name: Stellar integration map
+    url: https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/docs/06-stellar-integration.md
+    about: Every Stellar and Soroban primitive this repository depends on, and where.
   - name: Security policy
     url: https://github.com/SlipGuard-HQ/stellar-slipguard/blob/main/SECURITY.md
     about: Report a vulnerability privately. Do not open a public issue.

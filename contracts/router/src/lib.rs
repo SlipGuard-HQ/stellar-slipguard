@@ -10,8 +10,15 @@
 //! price floor and slippage tolerance, and writes a [`FillReceipt`].
 //!
 //! Fund movement is explicit and symmetric: nothing leaves the trader's
-//! balance until a fill succeeds, and the trader's signature is required for
-//! the pull. There is no escrow and no ERC-20 style allowance.
+//! balance until a fill succeeds, and the trader's Soroban authorization is
+//! required for the pull. There is no escrow and no SEP-41 allowance to manage.
+//!
+//! Every guarantee here is a Stellar guarantee: consent is
+//! [`soroban_sdk::Address::require_auth`] scoped to this invocation, the clock
+//! is `env.ledger().timestamp()`, order identity is
+//! `env.crypto().sha256()` over the intent's `ScVal` XDR, and the tokens are
+//! SEP-41 contracts (`soroban_sdk::token::TokenClient`), so the Stellar Asset
+//! Contract for XLM and issued assets works with no asset-specific code.
 
 use soroban_sdk::{
     contract, contractevent, contractimpl, token::TokenClient, xdr::ToXdr, Address, BytesN, Env,
@@ -96,8 +103,9 @@ impl SlipGuardRouter {
 
     /// Deterministic SHA-256 hash of a [`TraderIntent`].
     ///
-    /// The intent is serialized to its canonical `ScVal` XDR form and hashed.
-    /// Off-chain users can reproduce this value; see `@slipguard/sdk`.
+    /// The intent is serialized to its canonical `ScVal` XDR form by the
+    /// Stellar host and hashed with `env.crypto().sha256()`. Off-chain Stellar
+    /// clients can reproduce this value; see `@slipguard/sdk`.
     pub fn get_intent_hash(env: Env, intent: TraderIntent) -> BytesN<32> {
         let bytes = intent.to_xdr(&env);
         env.crypto().sha256(&bytes).to_bytes()
@@ -133,8 +141,10 @@ impl SlipGuardRouter {
     /// Atomically settle an intent.
     ///
     /// Both the solver executing the fill and the trader who owns the intent
-    /// must authorize the call. The trader's authorization binds these exact
-    /// intent parameters, so a solver cannot substitute a cheaper order.
+    /// must authorize the call with a Soroban authorization entry. The trader's
+    /// entry binds these exact intent parameters, so a solver cannot substitute
+    /// a cheaper order, and it can be handed to the solver in advance without
+    /// giving up control of the fill price.
     ///
     /// Settlement order follows checks-effects-interactions: intent state is
     /// committed before any token transfer, so a hostile token cannot re-enter

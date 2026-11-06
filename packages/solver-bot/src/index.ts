@@ -46,7 +46,7 @@ async function main(): Promise<void> {
       intent: candidate.intent,
       fillAmount: candidate.intent.minBuyAmount,
       prices: config.tokenPrices,
-      gasCost: config.gasCost,
+      txCost: config.txCost,
       minProfit: config.minProfit,
     });
 

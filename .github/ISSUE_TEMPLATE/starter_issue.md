@@ -1,13 +1,18 @@
 ---
-name: "Wave: Trivial (100 pts)"
+name: "Starter task (trivial)"
 about: A small, well-scoped task that is a good first contribution.
 title: "chore(<scope>): <short description>"
-labels: ["difficulty: trivial 100pts", "wave-ready"]
+labels: ["difficulty: trivial"]
 ---
 
 ## Summary
 
 <!-- One or two sentences. What is missing or wrong today? -->
+
+## Stellar surface
+
+<!-- Which Stellar or Soroban interface does this touch? One line is enough,
+e.g. "SEP-41 token interface", "Stellar RPC getEvents", "docs only". -->
 
 ## Where
 
@@ -16,7 +21,7 @@ labels: ["difficulty: trivial 100pts", "wave-ready"]
 ## Acceptance Criteria
 
 - [ ] Implementation matches the described behaviour
-- [ ] Tests cover the new behaviour
+- [ ] Tests cover the new behaviour, or the change is docs-only
 - [ ] `cargo fmt --all -- --check` and `pnpm exec prettier --check .` pass
 - [ ] `cargo test --all` and `pnpm test:packages` pass
 - [ ] Documentation updated if the public interface changed

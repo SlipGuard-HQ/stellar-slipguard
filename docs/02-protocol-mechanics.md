@@ -165,15 +165,19 @@ reject if ledger().timestamp() > deadline
 ```
 
 The comparison is strict. A fill in the same second as the deadline succeeds.
-Timestamps come from the ledger, not from the submitting client, so a solver
-cannot argue about the clock.
+`env.ledger().timestamp()` is the Soroban host's view of the closed ledger, not
+a value the submitting client supplies, so a solver cannot argue about the
+clock. The same applies to the event stream: `IntentFilled` and `IntentCancelled`
+are read back through Stellar RPC `getEvents`, filtered by router contract id.
 
 ## Hashing
 
 `get_intent_hash` serialises the intent to its canonical `ScVal` XDR form and
-takes SHA-256. A `#[contracttype]` struct becomes an `ScMap` with symbol keys
-sorted byte-wise, so the encoding is deterministic and independent of field
-declaration order.
+takes SHA-256 with `env.crypto().sha256()`, the Soroban host function. A
+`#[contracttype]` struct becomes an `ScMap` with symbol keys sorted byte-wise,
+so the encoding is deterministic and independent of field declaration order.
+Both the encoding and the hash are produced by the Stellar host, so the value is
+reproducible by any Stellar client and by `@slipguard/sdk`.
 
 The JavaScript SDK reproduces this encoding exactly. A golden vector shared
 between `contracts/router/src/test.rs` and

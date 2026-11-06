@@ -14,10 +14,10 @@ nothing in the protocol prevents it.
 The opposite failure is a limit order. The price is fixed, but nothing
 guarantees execution. Someone has to notice the order is fillable and pay to
 submit the fill, and if that is not profitable they will not do it. A resting
-order with no keeper is a wish.
+order with no solver is a wish.
 
 SlipGuard addresses both. The trader's constraints live in the execution path,
-so a fill that breaks them cannot settle. The keeper's compensation is part of
+so a fill that breaks them cannot settle. The solver's compensation is part of
 the order, so a solver has a reason to submit it.
 
 ## The intent model
@@ -43,7 +43,7 @@ transaction:
 
 The trader's funds never leave their wallet before a fill succeeds, and the
 trader's own signature is required to move them. There is no escrow account, no
-approval step, and no third party holding anything.
+SEP-41 approval step, and no third party holding anything.
 
 If the ledger timestamp is past the deadline, the fill reverts. If the solver
 delivers less than the minimum, the fill reverts. If the solver's fee would push
@@ -68,7 +68,7 @@ signature.
 XLM, per operation. Soroban adds a resource fee priced on the CPU instructions
 and I/O the contract actually uses. A solver does not need a large spread to
 make a submit worthwhile, which is what makes a small conditional order viable
-instead of gas-dominated.
+instead of fee-dominated.
 
 **Ledgers close in about five seconds.** A deadline in seconds is meaningful.
 The gap between the trader signing an intent and a solver settling it is short
@@ -78,6 +78,18 @@ screen.
 **Tokens are standard.** The router calls the SEP-41 token interface. That
 covers the Stellar Asset Contract for XLM and issued assets, and any SEP-41
 token deployed on Soroban, so the router does not need asset-specific code.
+`scripts/deploy.sh` resolves the pair with `stellar contract asset deploy`, so
+the contracts the router moves funds through are the Stellar Asset Contracts
+that already hold those assets.
+
+## Every dependency is a Stellar primitive
+
+There is no second execution environment and no abstraction over one. The order
+identity is a SHA-256 of a Soroban `ScVal` encoding, consent is a Soroban
+authorization entry, the clock is the ledger timestamp, storage follows
+Soroban's instance/persistent split with explicit TTL extension, and reads and
+writes go through Stellar RPC. [Stellar integration map](./06-stellar-integration.md)
+lists each primitive against the file that depends on it.
 
 ## What SlipGuard is not
 

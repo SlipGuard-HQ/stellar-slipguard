@@ -19,7 +19,9 @@ features:
   - title: Terms live in the execution path
     details: execute_intent re-derives every constraint on chain, so a fill that misses the minimum output, overspends the slippage budget or lands after the deadline reverts atomically.
   - title: Non-custodial settlement
-    details: There is no escrow and no allowance to manage. Both the trader and the solver authorize the exact argument set, and the router is the only component that moves funds.
+    details: There is no escrow and no SEP-41 allowance to manage. Both the trader and the solver authorize the exact argument set, and the router is the only component that moves funds.
+  - title: Stellar assets only
+    details: Settlement moves SEP-41 tokens, so the Stellar Asset Contract for XLM and issued assets works with no asset-specific code. Contract ids, ledger timestamps, authorization entries and events are all Stellar primitives.
 ---
 
 ## Start here
@@ -31,6 +33,7 @@ features:
 | [3. End-user guides](./03-end-user-guides.md) | Trade with intents, or run a solver and earn the fee. |
 | [4. Developer guide](./04-developer-guide.md) | Build, test, deploy, and use the SDK and RPC patterns. |
 | [5. Contract architecture](./05-architecture.md) | Review the contracts: responsibilities, dependency graph, storage, entry points and what is deliberately absent. |
+| [6. Stellar integration map](./06-stellar-integration.md) | Check every Stellar and Soroban primitive the repository depends on, and the file that depends on it. |
 
 A live testnet deployment is recorded in the
 [`deployments/`](https://github.com/SlipGuard-HQ/stellar-slipguard/tree/main/deployments)

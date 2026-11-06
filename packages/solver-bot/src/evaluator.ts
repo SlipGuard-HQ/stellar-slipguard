@@ -28,8 +28,11 @@ export interface EvaluationInput {
   fillAmount: bigint;
   /** Buy-token value the solver expects to realize from reselling `sellAmount`. */
   marketValueOfSell: bigint;
-  /** Estimated total transaction cost, in buy-token units. */
-  gasCost: bigint;
+  /**
+   * Estimated fill transaction cost, in buy-token units: the Stellar base fee
+   * per operation plus the Soroban resource fee.
+   */
+  txCost: bigint;
   /** Minimum acceptable net profit, in buy-token units. */
   minProfit: bigint;
   /** Override for the current unix time, mainly for tests. */
@@ -44,7 +47,7 @@ export interface EvaluationResult {
   solverFee: bigint;
   traderProceeds: bigint;
   marketValueOfSell: bigint;
-  gasCost: bigint;
+  txCost: bigint;
   netProfit: bigint;
 }
 
@@ -115,7 +118,8 @@ export function checkFillAgainstIntent(
  *
  * Profit is modelled from the solver's perspective: it pays `fillAmount` of
  * `buyToken`, receives `sellAmount` of `sellToken` worth `marketValueOfSell`,
- * and keeps `solverFee`.
+ * and keeps `solverFee`. `txCost` is the Stellar base fee plus the Soroban
+ * resource fee for the fill, denominated in buy-token units.
  */
 export function evaluateIntent(input: EvaluationInput): EvaluationResult {
   const now = input.now ?? nowSeconds();
@@ -129,12 +133,12 @@ export function evaluateIntent(input: EvaluationInput): EvaluationResult {
       solverFee: check.solverFee,
       traderProceeds: check.traderProceeds,
       marketValueOfSell: input.marketValueOfSell,
-      gasCost: input.gasCost,
+      txCost: input.txCost,
       netProfit: 0n,
     };
   }
 
-  const netProfit = input.marketValueOfSell + check.solverFee - input.fillAmount - input.gasCost;
+  const netProfit = input.marketValueOfSell + check.solverFee - input.fillAmount - input.txCost;
   const profitable = netProfit >= input.minProfit;
 
   return {
@@ -144,7 +148,7 @@ export function evaluateIntent(input: EvaluationInput): EvaluationResult {
     solverFee: check.solverFee,
     traderProceeds: check.traderProceeds,
     marketValueOfSell: input.marketValueOfSell,
-    gasCost: input.gasCost,
+    txCost: input.txCost,
     netProfit,
   };
 }
@@ -173,7 +177,7 @@ export function evaluateFromPrices(params: {
   intent: TraderIntent;
   fillAmount: bigint;
   prices: Record<string, number>;
-  gasCost: bigint;
+  txCost: bigint;
   minProfit: bigint;
   now?: number;
 }): EvaluationResult {
@@ -188,7 +192,7 @@ export function evaluateFromPrices(params: {
       solverFee: 0n,
       traderProceeds: 0n,
       marketValueOfSell: 0n,
-      gasCost: params.gasCost,
+      txCost: params.txCost,
       netProfit: 0n,
     };
   }
@@ -197,7 +201,7 @@ export function evaluateFromPrices(params: {
     intent: params.intent,
     fillAmount: params.fillAmount,
     marketValueOfSell: marketValueInQuote(params.intent.sellAmount, sellPrice, buyPrice),
-    gasCost: params.gasCost,
+    txCost: params.txCost,
     minProfit: params.minProfit,
     ...(params.now === undefined ? {} : { now: params.now }),
   });

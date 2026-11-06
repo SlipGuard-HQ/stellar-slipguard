@@ -1,7 +1,7 @@
 {
   "name": "@slipguard/solver-bot",
   "version": "0.1.0",
-  "description": "Reference solver keeper that watches, evaluates and fills SlipGuard intents.",
+  "description": "Reference solver for SlipGuard: watches Stellar RPC events, evaluates and fills Soroban intents.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",

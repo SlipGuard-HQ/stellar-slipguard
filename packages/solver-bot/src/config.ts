@@ -11,7 +11,12 @@ export class ConfigError extends Error {
   }
 }
 
-/** Fully resolved runtime configuration. */
+/**
+ * Fully resolved runtime configuration.
+ *
+ * Every field maps to a Stellar concept: a Soroban RPC endpoint, a network
+ * passphrase, a contract id (`C...`) and a Stellar secret seed (`S...`).
+ */
 export interface SolverConfig {
   /** Soroban RPC endpoint. */
   rpcUrl: string;
@@ -29,8 +34,8 @@ export interface SolverConfig {
   startLedger?: number;
   /** Minimum acceptable net profit, in buy-token units. */
   minProfit: bigint;
-  /** Estimated transaction cost, in buy-token units. */
-  gasCost: bigint;
+  /** Estimated fill transaction cost, in buy-token units. */
+  txCost: bigint;
   /** Max transaction fee, in stroops. */
   maxFeeStroops: string;
   /** Milliseconds to wait for ledger inclusion. */
@@ -167,7 +172,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): SolverConfig {
     pollIntervalMs: readInteger(env, "POLL_INTERVAL_MS", 5_000),
     startLedger: startLedgerRaw === undefined ? undefined : Number.parseInt(startLedgerRaw, 10),
     minProfit: readBigInt(env, "MIN_PROFIT", 0n),
-    gasCost: readBigInt(env, "GAS_COST", 0n),
+    txCost: readBigInt(env, "TX_COST", 0n),
     maxFeeStroops: readString(env, "MAX_FEE_STROOPS", "100000") as string,
     txTimeoutMs: readInteger(env, "TX_TIMEOUT_MS", 60_000),
     tokenPrices: readTokenPrices(env),

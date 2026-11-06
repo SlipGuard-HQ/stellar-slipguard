@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 #
-# Create the SlipGuard Wave issue backlog in one run.
+# Create the SlipGuard issue backlog in one run.
+#
+# Every issue is scoped to a Stellar or Soroban surface: SEP-41 / the Stellar
+# Asset Contract, Soroban authorization, storage TTL, Stellar RPC, or the
+# `stellar` CLI. There is no points or sprint accounting here; the labels
+# describe the area and the size of the work.
 #
 # Idempotent enough to be re-run: labels are created with --force, so only the
 # issues themselves are duplicated if you run it twice. Use DRY_RUN=true first.
 #
 # Usage:
-#   DRY_RUN=true ./scripts/create-wave-issues.sh     # print the plan
-#   ./scripts/create-wave-issues.sh                  # create labels + issues
-#   REPO=my-org/my-fork ./scripts/create-wave-issues.sh
+#   DRY_RUN=true ./scripts/create-stellar-backlog.sh   # print the plan
+#   ./scripts/create-stellar-backlog.sh                # create labels + issues
+#   REPO=my-org/my-fork ./scripts/create-stellar-backlog.sh
 #
 set -euo pipefail
 
@@ -47,46 +52,46 @@ issue() {
   gh issue create --repo "$REPO" --title "$title" --body "$body" --label "$labels"
 }
 
-TRIVIAL="difficulty: trivial 100pts"
-MEDIUM="difficulty: medium 150pts"
-HIGH="difficulty: high 200pts"
-WAVE="wave-ready"
+TRIVIAL="difficulty: trivial"
+MEDIUM="difficulty: medium"
+HIGH="difficulty: high"
 CONTRACTS="area: contracts"
 SDK="area: sdk"
 BOT="area: solver-bot"
 CI="area: ci"
 DOCS="area: docs"
+RPC="area: stellar-rpc"
+AUTH="area: soroban-auth"
 
 log "repository: $REPO"
 log "dry run:    $DRY_RUN"
 
 # ---------------------------------------------------------------- labels
 log "creating labels"
-label "$WAVE" "Ready to be claimed in a Wave sprint" "0E8A16"
-label "$TRIVIAL" "Small, well-scoped task. 100 points on merge." "C2E0C6"
-label "$MEDIUM" "Multi-file task with some design decisions. 150 points on merge." "FBCA04"
-label "$HIGH" "Substantial change touching economics, storage or security. 200 points on merge." "D93F0B"
-label "$CONTRACTS" "Rust and Soroban contracts" "1D76DB"
-label "$SDK" "TypeScript SDK" "5319E7"
-label "$BOT" "Solver keeper bot" "0E8A16"
+label "$TRIVIAL" "Small, well-scoped task." "C2E0C6"
+label "$MEDIUM" "Multi-file task with some design decisions." "FBCA04"
+label "$HIGH" "Substantial change to settlement, storage, auth or TTL." "D93F0B"
+label "$CONTRACTS" "Soroban contracts under contracts/" "1D76DB"
+label "$SDK" "TypeScript SDK against Stellar RPC" "5319E7"
+label "$BOT" "Reference solver daemon" "0E8A16"
+label "$RPC" "Stellar RPC reads, simulations or events" "006B75"
+label "$AUTH" "Soroban authorization and auth-entry scoping" "B60205"
 label "$CI" "CI, tooling and release automation" "BFD4F2"
 label "$DOCS" "Documentation" "BFDADC"
 
 # ------------------------------------------------------------- contracts
 log "creating contract issues"
 
-issue "perf(router): batch-read intent statuses for indexers" "$TRIVIAL,$WAVE,$CONTRACTS" <<'EOF'
+issue "perf(router): batch-read intent statuses for Stellar RPC indexers" "$TRIVIAL,$CONTRACTS,$RPC" <<'EOF'
 ## Summary
 
-Reading the status of N intents currently costs N RPC simulations. Add a
-read-only entry point that returns the status of several intent hashes in one
-call.
+Reading the status of N intents currently costs N `simulateTransaction` round
+trips against Stellar RPC. Add a read-only entry point that returns the status
+of several intent hashes in one simulation.
 
-## Why it matters
+## Stellar surface
 
-Any indexer or dashboard that tracks live intents is bottlenecked on round
-trips, not on compute. One batched read makes the router usable by off-chain
-indexers without them hammering Soroban RPC.
+`simulateTransaction` on Stellar RPC; Soroban `Vec` argument and return types.
 
 ## Acceptance Criteria
 
@@ -99,24 +104,24 @@ indexers without them hammering Soroban RPC.
 
 ## Tech Stack
 
-Rust, Soroban SDK 26, `soroban_sdk::Vec`
+Rust, Soroban SDK 26, `soroban_sdk::Vec`, Stellar RPC simulation
 
 ## Out of Scope
 
 Pagination and storage layout changes.
 EOF
 
-issue "test(router): property tests for the basis-point and slippage math" "$MEDIUM,$WAVE,$CONTRACTS" <<'EOF'
+issue "test(router): property tests for the basis-point and slippage math" "$MEDIUM,$CONTRACTS" <<'EOF'
 ## Summary
 
 The fee and slippage math (`mul_bps`, the shortfall calculation in
 `execute_intent`) is only covered by example-based tests. Add property tests
-that assert the invariants hold for arbitrary inputs.
+that assert the invariants hold for arbitrary inputs on the Soroban host.
 
-## Why it matters
+## Stellar surface
 
-This is the code that decides how much a trader receives. A rounding error at a
-boundary is a real loss of funds, and example-based tests will not find it.
+`soroban_sdk::testutils` host environment, `i128` contract arithmetic, checked
+operations surfaced as `SlipGuardError::MathOverflow`.
 
 ## Acceptance Criteria
 
@@ -138,28 +143,27 @@ Rust, Soroban SDK 26, `proptest` (dev-dependency), `soroban_sdk::testutils`
 Changing the fee or slippage semantics themselves.
 EOF
 
-issue "feat(router): add an admin pause switch that halts settlement" "$MEDIUM,$WAVE,$CONTRACTS" <<'EOF'
+issue "feat(router): add an admin pause switch that halts settlement" "$MEDIUM,$CONTRACTS,$AUTH" <<'EOF'
 ## Summary
 
 Add a pause flag, settable only by the admin, that makes `execute_intent`
 return a typed error. Cancellation must keep working while paused so traders can
 always withdraw.
 
-## Why it matters
+## Stellar surface
 
-Without a circuit breaker, a discovered bug in the token transfer path can only
-be mitigated by asking everyone to stop using the contract. A pause lets the
-protocol stop new fills immediately while leaving the exit path open.
+`admin.require_auth()` on both transitions, instance storage with TTL extension,
+a new `#[contracterror]` variant and a new `#[contractevent]`.
 
 ## Acceptance Criteria
 
 - [ ] `pause(admin)` and `unpause(admin)` entry points, both `admin.require_auth()`.
-- [ ] New `Paused` error variant, emitted when `execute_intent` is called while paused.
+- [ ] New `Paused` error variant, returned when `execute_intent` is called while paused.
 - [ ] `cancel_intent` is **not** gated by the pause.
-- [ ] `Paused` state lives in instance storage and is readable via a getter.
-- [ ] Events emitted on both transitions.
+- [ ] Paused state lives in instance storage and is readable via a getter.
+- [ ] Events emitted on both transitions; both are visible through Stellar RPC `getEvents`.
 - [ ] Tests cover pause, unpause, a blocked fill, and a cancellation that still succeeds while paused.
-- [ ] README documents the new entry points, errors and events.
+- [ ] `docs/05-architecture.md` and the README document the new entry points, errors and events.
 
 ## Tech Stack
 
@@ -170,25 +174,25 @@ Rust, Soroban SDK 26
 Time-bounded pauses, a pause guardian role, and multisig admin.
 EOF
 
-issue "feat(router): support partial fills on an intent" "$HIGH,$WAVE,$CONTRACTS" <<'EOF'
+issue "feat(router): support partial fills on an intent" "$HIGH,$CONTRACTS,$AUTH" <<'EOF'
 ## Summary
 
 Allow a solver to fill part of an intent. Add an explicit `remaining_amount`
 tracked in storage, a `PartiallyFilled` status, and allow multiple fills until
 the sell side is exhausted.
 
-## Why it matters
+## Stellar surface
 
-Large orders cannot be filled in one ledger without moving the pool. Partial
-fills are what make SlipGuard usable for size instead of only for small orders.
+Persistent storage with TTL extension on every write, Soroban auth scoped to
+`execute_intent`, `#[contracttype]` status enum change.
 
-## Design
+## Stellar surface details
 
 ### Storage
 
 - `IntentFill { filled_sell: i128, filled_buy: i128, fills: u32 }` under
   `DataKey::IntentFill(BytesN<32>)`, persistent, TTL-extended on every write.
-- Status gains a `PartiallyFilled` variant.
+- Status gains a `PartiallyFilled` variant, which is a breaking `ScVal` enum change.
 
 ### Entry points and auth
 
@@ -206,16 +210,17 @@ fills are what make SlipGuard usable for size instead of only for small orders.
 ### TTL
 
 The fill record must be extended on every write, or a long-running partial fill
-can expire mid-order.
+can be archived mid-order.
 
 ## Risks
 
 Rounding on partial amounts (pro rata math must never favour the solver),
-cumulative slippage accounting, and reentrancy while a fill is in progress.
+cumulative slippage accounting, archival expiry of the fill record, and
+reentrancy while a fill is in progress.
 
 ## Acceptance Criteria
 
-- [ ] Pro rata math documented with worked examples in the README.
+- [ ] Pro rata math documented with worked examples in `docs/02-protocol-mechanics.md`.
 - [ ] A partial fill cannot overshoot the sell amount.
 - [ ] Cumulative slippage enforcement tested.
 - [ ] Nonce is consumed exactly once per intent.
@@ -234,16 +239,16 @@ EOF
 # --------------------------------------------------------------------- sdk
 log "creating SDK issues"
 
-issue "docs(sdk): add JSDoc examples for every exported symbol" "$TRIVIAL,$WAVE,$SDK" <<'EOF'
+issue "docs(sdk): add JSDoc examples for every exported symbol" "$TRIVIAL,$SDK,$DOCS" <<'EOF'
 ## Summary
 
 Every export in `packages/sdk/src/index.ts` should carry a JSDoc block with a
 short, runnable example.
 
-## Why it matters
+## Stellar surface
 
-The SDK is the first thing an integrator reads. Types alone do not show the
-order of builder calls or which network preset to use.
+Examples must show Stellar contract ids (`C...`), the testnet network passphrase,
+and `bigint` amounts as `i128` values.
 
 ## Acceptance Criteria
 
@@ -261,7 +266,7 @@ TypeScript, TSDoc, Vitest
 A generated API reference site.
 EOF
 
-issue "test(sdk): fuzz intent deserialization against malformed payloads" "$TRIVIAL,$WAVE,$SDK" <<'EOF'
+issue "test(sdk): fuzz intent deserialization against malformed payloads" "$TRIVIAL,$SDK" <<'EOF'
 ## Summary
 
 `deserializeIntent` is the entry point for untrusted feed data. Add a table of
@@ -269,69 +274,69 @@ malformed, adversarial and boundary payloads and assert it throws
 `IntentValidationError` rather than a `TypeError` or silently accepting a bad
 intent.
 
-## Why it matters
+## Stellar surface
 
-A solver bot that crashes on one malformed feed entry stops filling every other
-intent. Failing loudly with a typed error is what lets the watcher skip a bad
-entry and continue.
+Address validation goes through `@stellar/stellar-sdk` `Address`, so malformed
+strkeys must be rejected before they reach a Stellar RPC simulation.
 
 ## Acceptance Criteria
 
 - [ ] Cases covered: wrong types, missing fields, negative amounts, zero amounts,
-      `maxSlippageBps` above 10,000, fractional basis points, non-integer deadlines.
+      `maxSlippageBps` above 10,000, fractional basis points, non-integer deadlines,
+      invalid `G...` / `C...` strkeys.
 - [ ] Every rejection throws `IntentValidationError`.
 - [ ] Valid payloads round-trip unchanged.
 - [ ] `pnpm --filter @slipguard/sdk test` passes.
 
 ## Tech Stack
 
-TypeScript, Vitest
+TypeScript, `@stellar/stellar-sdk` `Address`, Vitest
 
 ## Out of Scope
 
 The contract-side decoding of the intent.
 EOF
 
-issue "feat(sdk): decode FillReceipt from a transaction result" "$MEDIUM,$WAVE,$SDK" <<'EOF'
+issue "feat(sdk): decode FillReceipt from a getTransaction result" "$MEDIUM,$SDK,$RPC" <<'EOF'
 ## Summary
 
-Add a helper that takes a settled transaction (or a Soroban RPC result) and
-decodes the `FillReceipt` emitted by a successful `execute_intent`, returning a
-typed object instead of raw XDR.
+Add a helper that takes a settled transaction (or a Stellar RPC
+`getTransaction` response) and decodes the `FillReceipt` returned by a successful
+`execute_intent`, returning a typed object instead of raw XDR.
 
-## Why it matters
+## Stellar surface
 
-Every integrator currently hand-rolls this decoding, and getting it wrong is
-silent. The solver bot needs it for its success logging; a UI needs it to show
-"you sold 10 XLM for 9.51 USDC".
+Stellar RPC `getTransaction` response XDR, Soroban `ScVal` `scvMap` decoding,
+32-byte `BytesN` intent hashes.
 
 ## Acceptance Criteria
 
 - [ ] `decodeFillReceipt(...)` returns `FillReceipt` with `buyAmount` as `bigint` and `intentHash` as hex.
 - [ ] Throws a typed error when the transaction failed or returned no receipt.
 - [ ] Unit tests using a captured XDR fixture for a successful fill and a failed transaction.
-- [ ] `pnpm --filter @slipguard/sdk test` and `pnpm --filter @slipguard/sdk typecheck` pass.
+- [ ] `pnpm --filter @slipguard/sdk test` and `pnpm --filter @slipguard/sdk lint` pass.
 
 ## Tech Stack
 
-TypeScript, `@stellar/stellar-sdk` XDR, Vitest
+TypeScript, `@stellar/stellar-sdk` XDR, Stellar RPC, Vitest
 
 ## Out of Scope
 
 Indexing historical fills.
 EOF
 
-issue "feat(sdk): sign and attach the trader's authorization entry" "$HIGH,$WAVE,$SDK" <<'EOF'
+issue "feat(sdk): sign and attach the trader's Soroban authorization entry" "$HIGH,$SDK,$AUTH" <<'EOF'
 ## Summary
 
-Add a supported path for a trader to sign the authorization entry for their own
-intent, and for a solver to attach it to a fill. Today this is left to the
-integrator and is the most error-prone part of the whole flow.
+Add a supported path for a trader to sign the Soroban authorization entry for
+their own intent, and for a solver to attach it to a fill. Today this is left to
+the integrator and is the most error-prone part of the whole flow.
 
-## Why it matters
+## Stellar surface
 
-This is the mechanism that makes the protocol non-custodial. If the ergonomics
-are wrong, people will hand over keys instead, which defeats the design.
+`xdr.SorobanAuthorizationEntry`, invocation-tree signing with
+`authorizeEntry`/`Operation`, base64 XDR transport, ledger-bounded signature
+expiry, and `assembleTransaction` auth override.
 
 ## Design
 
@@ -346,7 +351,7 @@ are wrong, people will hand over keys instead, which defeats the design.
 - [ ] `signIntentAuthorization(...)` produces an entry the router accepts.
 - [ ] The entry is scoped to one intent; changing any field invalidates it.
 - [ ] A test asserts a tampered intent (different amount) is rejected.
-- [ ] README and `docs/` show the trader-to-solver handoff end to end.
+- [ ] README and `docs/03-end-user-guides.md` show the trader-to-solver handoff end to end.
 - [ ] SDK typechecks and tests pass.
 
 ## Tech Stack
@@ -361,21 +366,19 @@ EOF
 # -------------------------------------------------------------- solver bot
 log "creating solver bot issues"
 
-issue "fix(solver-bot): back off exponentially on RPC rate limits" "$TRIVIAL,$WAVE,$BOT" <<'EOF'
+issue "fix(solver-bot): back off exponentially on Stellar RPC rate limits" "$TRIVIAL,$BOT,$RPC" <<'EOF'
 ## Summary
 
-When Soroban RPC returns a rate-limit or transient error, back off
-exponentially with jitter instead of retrying on the next tick.
+When Stellar RPC returns a rate-limit or transient error, back off exponentially
+with jitter instead of retrying on the next tick.
 
-## Why it matters
+## Stellar surface
 
-Public RPC endpoints throttle. A tight retry loop turns a temporary throttle
-into a sustained ban, and the bot stops filling orders for the rest of the
-cycle.
+`getEvents`, `simulateTransaction` and `sendTransaction` on Stellar RPC.
 
 ## Acceptance Criteria
 
-- [ ] Retries for `getEvents`, `simulateTransaction` and `sendTransaction` use exponential backoff with jitter.
+- [ ] Retries use exponential backoff with jitter.
 - [ ] Backoff resets after a successful call.
 - [ ] Backoff state is visible in the structured logs.
 - [ ] A unit test asserts the delay sequence grows and stays within bounds.
@@ -383,23 +386,23 @@ cycle.
 
 ## Tech Stack
 
-TypeScript, Vitest, Soroban RPC
+TypeScript, Vitest, Stellar RPC
 
 ## Out of Scope
 
 Multi-endpoint failover.
 EOF
 
-issue "feat(solver-bot): persist seen intent hashes across restarts" "$MEDIUM,$WAVE,$BOT" <<'EOF'
+issue "feat(solver-bot): persist seen intent hashes across restarts" "$MEDIUM,$BOT" <<'EOF'
 ## Summary
 
 Persist the watcher's dedupe set to disk so a restart does not re-evaluate
 intents it has already seen (and potentially double-submit a fill).
 
-## Why it matters
+## Stellar surface
 
-A crash loop currently re-processes everything it can see, which wastes RPC
-budget and races against its own in-flight transaction.
+Keys are the SHA-256 intent hashes the router computes; entries carry the ledger
+sequence in which they were first observed.
 
 ## Design
 
@@ -425,24 +428,23 @@ TypeScript, Vitest, Node `node:fs`
 A shared database across multiple solver instances.
 EOF
 
-issue "feat(solver-bot): price intents from Soroswap reserves instead of a static table" "$HIGH,$WAVE,$BOT" <<'EOF'
+issue "feat(solver-bot): price intents from Soroswap reserves instead of a static table" "$HIGH,$BOT,$RPC" <<'EOF'
 ## Summary
 
 Replace the static `TOKEN_PRICES` table with live pool reserves read from the
-Soroswap router, so profitability is computed from the pool the fill will
-actually move.
+Soroswap router on Soroban, so profitability is computed from the pool the fill
+will actually move.
 
-## Why it matters
+## Stellar surface
 
-A static price table is optimistic by construction: it ignores both the price
-impact of the fill and the pool's current state. Solvers using it will submit
-fills that revert or lose money.
+Contract invocations through the SDK's `simulateRead`, Soroban `i128` reserves,
+constant-product math on Stellar asset pairs.
 
 ## Design
 
 - Read reserves for the sell/buy pair from the Soroswap router on each poll.
 - Apply constant-product math to compute the executable output for `sell_amount`.
-- Subtract the trader's fill amount and gas, then compare against `MIN_PROFIT`.
+- Subtract the trader's fill amount and `TX_COST`, then compare against `MIN_PROFIT`.
 - Fall back to the static table only if reserves are unavailable, and log that
   fallback at `warn`.
 
@@ -452,57 +454,28 @@ fills that revert or lose money.
 - [ ] Price impact of the fill is included in the expected output.
 - [ ] A unit test asserts the constant-product math against known reserves.
 - [ ] A unit test asserts an unprofitable fill after impact is skipped.
-- [ ] Pool address configurable; fallback path tested.
-- [ ] `docs/` explains the profitability model with worked numbers.
+- [ ] Pool contract id configurable; fallback path tested.
+- [ ] `docs/03-end-user-guides.md` explains the profitability model with worked numbers.
 
 ## Tech Stack
 
-TypeScript, Soroban RPC, Soroswap router, Vitest
+TypeScript, Stellar RPC, Soroswap router, Vitest
 
 ## Out of Scope
 
-Multi-hop routing and other DEXes.
+Multi-hop routing and other Stellar DEXes.
 EOF
 
-issue "feat(solver-bot): expose a Prometheus metrics endpoint" "$MEDIUM,$WAVE,$BOT" <<'EOF'
-## Summary
-
-Serve `/metrics` with counters for intents observed, evaluated, submitted,
-settled, rejected (by reason), plus gas spent and net profit.
-
-## Why it matters
-
-An unmonitored solver cannot be tuned. Today the only way to answer "why did it
-stop filling?" is to read JSON logs by hand.
-
-## Acceptance Criteria
-
-- [ ] Endpoint bound to `METRICS_PORT` (default 9464) and disabled when the port is unset.
-- [ ] Counters for observed / evaluated / profitable / submitted / settled / failed, labelled by reason.
-- [ ] Gauges for last successful poll ledger and current RPC latency.
-- [ ] Endpoint returns valid Prometheus text format (asserted in a test).
-- [ ] Documented in `.env.example` and the solver guide.
-
-## Tech Stack
-
-TypeScript, `prom-client`, Vitest
-
-## Out of Scope
-
-Dashboards, alerting rules and tracing.
-EOF
-
-issue "feat(solver-bot): support multiple concurrent solver keys" "$HIGH,$WAVE,$BOT" <<'EOF'
+issue "feat(solver-bot): support multiple concurrent solver keys" "$HIGH,$BOT,$AUTH" <<'EOF'
 ## Summary
 
 Allow several solver accounts to be configured and rotated, so the bot does not
 serialize every fill behind one account's sequence number.
 
-## Why it matters
+## Stellar surface
 
-A single solver account can only have one in-flight transaction at a time. On a
-5-second ledger that caps throughput at one fill per ledger no matter how many
-opportunities appear.
+Stellar account sequence numbers, `Keypair.fromSecret` per solver, per-account
+auth entries.
 
 ## Design
 
@@ -510,7 +483,7 @@ opportunities appear.
 - A simple round-robin allocator picks the next free key per fill.
 - A key that fails with a sequence or insufficient-balance error is quarantined
   with a backoff rather than retried on every tick.
-- Per-key balances are checked before a fill is attempted.
+- Per-key balances are checked with a Soroban `balance` simulation before a fill is attempted.
 
 ## Acceptance Criteria
 
@@ -518,11 +491,11 @@ opportunities appear.
 - [ ] A failing key is quarantined and the others keep working.
 - [ ] Insufficient balance on a key skips that key and logs once, not per tick.
 - [ ] Backwards compatible with a single `SOLVER_SECRET_KEY`.
-- [ ] `docs/` explains throughput implications.
+- [ ] `docs/04-developer-guide.md` explains throughput implications.
 
 ## Tech Stack
 
-TypeScript, Soroban RPC, Vitest
+TypeScript, Stellar RPC, Vitest
 
 ## Out of Scope
 
@@ -530,19 +503,17 @@ Remote signers, HSM integration and fee-bump accounts.
 EOF
 
 # ----------------------------------------------------------------- ci/doc
-log "creating CI and docs issues"
+log "creating CI and documentation issues"
 
-issue "chore(ci): add a coverage job for the Rust contracts" "$TRIVIAL,$WAVE,$CI" <<'EOF'
+issue "chore(ci): add a coverage job for the Soroban contracts" "$TRIVIAL,$CI" <<'EOF'
 ## Summary
 
-Run `cargo llvm-cov` in CI and publish the coverage summary as a job summary and
-(optionally) to Codecov.
+Run `cargo llvm-cov` in CI and publish the coverage summary as a job summary.
 
-## Why it matters
+## Stellar surface
 
-Coverage is the cheapest early signal that a PR touched settlement logic without
-adding a test. The contract tests are the only thing standing between a bug and
-someone's funds.
+None on chain; the job builds the `wasm32v1-none` target and runs against
+`soroban-sdk` testutils.
 
 ## Acceptance Criteria
 
@@ -561,25 +532,24 @@ GitHub Actions, `cargo-llvm-cov`, Rust
 Enforcing a minimum coverage threshold.
 EOF
 
-issue "feat(ci): publish release WASM artifacts and attach contract ids to the tag" "$MEDIUM,$WAVE,$CI" <<'EOF'
+issue "feat(ci): publish release WASM artifacts and attach contract ids to the tag" "$MEDIUM,$CI" <<'EOF'
 ## Summary
 
 Add a tag-triggered workflow that builds the release WASM, uploads it as a
-release asset with its SHA-256, and writes the deployed contract ids into the
-release body.
+release asset with its SHA-256, and writes the deployed Stellar contract ids
+into the release body.
 
-## Why it matters
+## Stellar surface
 
-A reviewer or integrator needs the exact bytecode and the contract address for a
-release, not a build from an arbitrary commit. This is also what the Wave
-submission needs for its release link.
+Release `wasm32v1-none` bytecode, Stellar contract ids from
+`deployments/<network>.json`, and the `stellar` CLI checksum convention.
 
 ## Acceptance Criteria
 
 - [ ] Workflow triggers on `v*` tags.
 - [ ] Builds with `--target wasm32v1-none --release` and uploads both `.wasm` files.
 - [ ] Prints and attaches SHA-256 checksums for each artifact.
-- [ ] Release body includes a table of contract ids per network, read from a checked-in manifest.
+- [ ] Release body includes a table of Stellar contract ids per network, read from a checked-in manifest.
 - [ ] Workflow fails if the manifest is missing an entry for a network being released to.
 
 ## Tech Stack
@@ -591,63 +561,36 @@ GitHub Actions, `softprops/action-gh-release`, Rust, Stellar CLI
 Automatic deployment to mainnet.
 EOF
 
-issue "docs: add a GitBook-ready protocol mechanics page with worked numbers" "$MEDIUM,$WAVE,$DOCS" <<'EOF'
+issue "docs: write a Soroban authorization debugging guide" "$MEDIUM,$DOCS,$AUTH" <<'EOF'
 ## Summary
 
-Write `docs/02-protocol-mechanics.md`: the full intent lifecycle and the
-economics, with real worked numbers rather than placeholders.
+Add a page that explains how to debug the most common Soroban authorization
+failures seen by integrators, with the exact error each one produces.
 
-## Why it matters
+## Stellar surface
 
-Reviewers and integrators both need to see the intended lifecycle and check the
-math themselves. Vague prose here reads as an unfinished project.
+`SorobanAuthorizationEntry` scoping, invocation trees, ledger-bounded signature
+expiry, `simulateTransaction` auth output, and Stellar RPC error responses.
 
 ## Acceptance Criteria
 
-- [ ] Lifecycle documented as a state machine: Active, PartiallyFilled (once it exists), Filled, Cancelled.
-- [ ] A worked example with concrete amounts showing the solver fee, the trader's net proceeds, and the resulting shortfall in basis points.
-- [ ] A table of which error is raised at each rejection point.
-- [ ] Every number traceable to the code, not invented.
-- [ ] No em dashes, no filler adjectives, short direct sentences.
-- [ ] README links to the page.
+- [ ] Each failure mode documented with the error text a developer sees:
+      wrong network passphrase, stale auth entry, auth entry signed for a
+      different argument set, missing trader authorization, unfunded source account.
+- [ ] Each section shows the shortest command that reproduces it on testnet.
+- [ ] No screenshots; commands and XDR snippets only.
+- [ ] Linked from `docs/04-developer-guide.md` and the README.
 
 ## Tech Stack
 
-Markdown, GitBook
+Markdown, VitePress, Stellar CLI, Stellar RPC
 
 ## Out of Scope
 
-A hosted docs deployment.
-EOF
-
-issue "docs: write the trader and solver operator guides" "$MEDIUM,$WAVE,$DOCS" <<'EOF'
-## Summary
-
-Write `docs/03-end-user-guides.md` covering both personas in plain language.
-
-## Why it matters
-
-The protocol has two sides and both need a cold start. A trader needs to know
-what they are signing; a solver needs to know what they earn and what they risk.
-
-## Acceptance Criteria
-
-- [ ] Trader section: what an intent is, how to pick `min_buy_amount` and `max_slippage_bps`, how to cancel, and what happens if nobody fills.
-- [ ] Solver section: how profitability is computed, what the solver fee is, what reverts cost, and how to run the bot safely (`DRY_RUN=true` first).
-- [ ] Every code sample is copy-pasteable and matches the shipped SDK surface.
-- [ ] No unverified statistics; anything numeric must come from the code or a cited source.
-- [ ] README links to the guide.
-
-## Tech Stack
-
-Markdown, GitBook
-
-## Out of Scope
-
-Video walkthroughs.
+A hosted debugging tool.
 EOF
 
 log "done"
 if [[ "$DRY_RUN" != "true" ]]; then
-  log "list the backlog with: gh issue list --repo $REPO --label wave-ready"
+  log "list the backlog with: gh issue list --repo $REPO --label area: contracts"
 fi

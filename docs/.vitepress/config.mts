@@ -9,7 +9,7 @@ export default withMermaid(
   defineConfig({
     title: "SlipGuard",
     description:
-      "Intent-based conditional orders with enforced slippage protection, built natively for Stellar and Soroban.",
+      "Intent-based conditional orders with enforced slippage protection, settled by Soroban contracts on Stellar.",
     base: "/stellar-slipguard/",
     lang: "en-US",
 
@@ -37,6 +37,7 @@ export default withMermaid(
         { text: "Home", link: "/" },
         { text: "Introduction", link: "/01-introduction" },
         { text: "Developer guide", link: "/04-developer-guide" },
+        { text: "Stellar map", link: "/06-stellar-integration" },
       ],
 
       sidebar: [
@@ -48,6 +49,7 @@ export default withMermaid(
             { text: "3. End-user guides", link: "/03-end-user-guides" },
             { text: "4. Developer guide", link: "/04-developer-guide" },
             { text: "5. Contract architecture", link: "/05-architecture" },
+            { text: "6. Stellar integration map", link: "/06-stellar-integration" },
           ],
         },
       ],

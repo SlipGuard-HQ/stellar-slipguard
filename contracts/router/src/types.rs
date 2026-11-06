@@ -19,9 +19,11 @@ pub enum IntentStatus {
 
 /// A signed, off-chain conditional order.
 ///
-/// The full struct is hashed with `Keccak`-style determinism: the router
-/// serializes it to XDR (an `ScVal` map with sorted symbol keys) and takes
-/// SHA-256. Off-chain SDKs must reproduce the exact same encoding.
+/// The whole struct is hashed deterministically by the Stellar host: the router
+/// serializes it to `ScVal` XDR (a map with symbol keys sorted byte-wise) with
+/// [`soroban_sdk::xdr::ToXdr`] and hashes it with `env.crypto().sha256()`.
+/// Off-chain Stellar clients must reproduce the exact same encoding. See
+/// `@slipguard/sdk` `intentToScVal`.
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TraderIntent {
@@ -31,7 +33,8 @@ pub struct TraderIntent {
     pub sell_token: Address,
     /// Token the trader buys. Provided by the solver at fill time.
     pub buy_token: Address,
-    /// Exact amount of `sell_token` moved to the solver on fill.
+    /// Exact amount of `sell_token` moved to the solver on fill. The token is
+    /// any SEP-41 contract, including a Stellar Asset Contract.
     pub sell_amount: i128,
     /// Gross amount of `buy_token` the solver must deliver.
     pub min_buy_amount: i128,
