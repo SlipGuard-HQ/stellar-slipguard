@@ -321,7 +321,7 @@ useful to the next person.
 
 ## Contributing
 
-Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request. Every PR should reference an issue, pass CI, and include tests for new behaviour. The full planned backlog lives in the [issue tracker](https://github.com/SlipGuard-HQ/stellar-slipguard/issues), labelled by Stellar surface and difficulty.
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request. Every PR should reference an issue, pass CI, and include tests for new behaviour. The full planned backlog lives in the [issue tracker](https://github.com/SlipGuard-HQ/stellar-slipguard/issues), labelled by Stellar surface and issue type.
 
 ## Community
 

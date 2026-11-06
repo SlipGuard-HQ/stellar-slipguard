@@ -279,10 +279,13 @@ DRY_RUN=true ./scripts/create-stellar-backlog.sh   # print the plan
 ./scripts/create-stellar-backlog.sh                # create labels and issues
 ```
 
-It creates the labels (`area: contracts`, `area: sdk`, `area: solver-bot`,
-`area: ci`, `area: docs`, `area: stellar-rpc`, `difficulty: *`) and the issue
-backlog. Every issue carries a summary, the Stellar or Soroban surface it
-touches, scoped acceptance criteria and a tech stack line.
+It creates the `area:` labels (`area: contracts`, `area: sdk`,
+`area: solver-bot`, `area: stellar-rpc`, `area: soroban-auth`, `area: ci`,
+`area: docs`) and a `testing` label, then files the backlog against GitHub's
+standard `enhancement`, `bug`, `documentation` and `good first issue` labels.
+There are no points or sprint labels. Every issue carries a summary, the
+Stellar or Soroban surface it touches, scoped acceptance criteria and a tech
+stack line.
 Labels are created with `--force`, so re-running is safe for labels. Issues are
 not de-duplicated, so run it once.
 

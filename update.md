@@ -41,7 +41,7 @@ signals that were competing with it.
 | README | Stellar framing in the tagline, then generic order-flow prose and a "Wave issue backlog" section | Opens with the Soroban implementation, then a twelve-row table of Stellar/Soroban primitives with the file that depends on each and the consequence of removing it |
 | Documentation | Five pages, no Stellar-specific reference | Same five pages plus `docs/06-stellar-integration.md`, a primitive-by-primitive dependency map (contract, client and operations layers) and an explicit "what is deliberately absent" list |
 | Issue templates | Three "Wave: N pts" templates with no Stellar scope requirement | `soroban_contract_issue.md`, `stellar_integration_issue.md`, `starter_issue.md`, each with a required **Stellar surface** section listing `require_auth`, TTL, `ScVal` hashing, SEP-41/SAC, `env.ledger()`, RPC and CLI |
-| Backlog script | `scripts/create-wave-issues.sh`, points labels, 15 issues, several with EVM phrasing | `scripts/create-stellar-backlog.sh`, area labels including `area: stellar-rpc` and `area: soroban-auth`, 15 issues that each name the Stellar interface they touch |
+| Backlog script | `scripts/create-wave-issues.sh`, `wave-ready` and `difficulty: * 100pts` labels, 15 issues, several with EVM phrasing | `scripts/create-stellar-backlog.sh`: no points, no `wave-ready`, the `area:` labels plus GitHub's `enhancement`, `bug`, `documentation`, `good first issue` and a `testing` label; 15 issues that each name the Stellar interface they touch |
 | Contributing guide | "This repository is part of the Stellar Wave program", points and sprint rules | Stellar/Soroban surface rules: what you must update when you touch auth, storage/TTL, `contracttype` encoding, SEP-41 calls, RPC or the `stellar` CLI, plus a list of terms to avoid |
 | PR template | Generic checklist | Adds a **Stellar Surface** section and a "no EVM terminology" check |
 | Security policy | Generic contract scope | Adds auth-entry replay, ledger-clock trust, archival/TTL weakening, SAC vs `MockToken` confusion and network-passphrase mistakes to the in-scope list |
@@ -113,10 +113,12 @@ These are the only changes with runtime consequences.
    script behaves as before and deploys `MockToken` instances, now labelled
    test-only in the output.
 3. **`scripts/create-wave-issues.sh` is now
-   `scripts/create-stellar-backlog.sh`.** Labels no longer carry points:
-   `wave-ready` is gone, and `area: stellar-rpc` and `area: soroban-auth` are new.
-   Existing labels on GitHub are unchanged until you run the script or delete
-   them by hand.
+   `scripts/create-stellar-backlog.sh`.** Labels no longer carry points or
+   sprint state: `wave-ready` and the three `difficulty: * 100pts` labels are
+   gone, replaced by GitHub's standard `enhancement`, `bug`, `documentation`
+   and `good first issue`, plus a `testing` label, alongside the `area:`
+   labels. The 17 existing issues were relabelled and the four points labels
+   were deleted from the repository, so the tracker carries no Wave remnants.
 4. **Contract behaviour, storage layout, error codes and ABI are unchanged.**
    There is no migration, no new entry point and no change to the settlement
    order.
@@ -173,7 +175,8 @@ Run in this workspace, Node 24.22.2, pnpm 12.16.1:
 | `DRY_RUN=true ./scripts/deploy.sh` (mock mode) | pass, prints plan and summary |
 | `DRY_RUN=true SELL_ASSET=native BUY_ASSET=USDC:G... ./scripts/deploy.sh` | pass, resolves both SACs |
 | `DRY_RUN=true SELL_ASSET=native ./scripts/deploy.sh` | exit 1, "set SELL_ASSET and BUY_ASSET together" |
-| `DRY_RUN=true ./scripts/create-stellar-backlog.sh` | pass, 10 labels and 15 issues |
+| `DRY_RUN=true ./scripts/create-stellar-backlog.sh` | pass, 8 labels and 15 issues |
+| `gh issue list --state all` after relabelling | 17 issues, none carrying a points or `wave-ready` label |
 
 Not run: `cargo fmt --all -- --check`, `cargo clippy --all-targets -- -D warnings`
 and `cargo test --all`. The Rust toolchain is not installed in this workspace

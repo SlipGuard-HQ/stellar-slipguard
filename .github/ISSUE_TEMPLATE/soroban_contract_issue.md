@@ -1,8 +1,8 @@
 ---
-name: "Soroban contract change (high)"
+name: "Soroban contract change"
 about: A substantial change to settlement, storage, authorization or TTL behaviour in contracts/.
 title: "feat(router): <short description>"
-labels: ["difficulty: high", "area: contracts"]
+labels: ["enhancement", "area: contracts"]
 ---
 
 ## Summary

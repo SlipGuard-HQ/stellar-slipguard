@@ -5,7 +5,7 @@
 # Every issue is scoped to a Stellar or Soroban surface: SEP-41 / the Stellar
 # Asset Contract, Soroban authorization, storage TTL, Stellar RPC, or the
 # `stellar` CLI. There is no points or sprint accounting here; the labels
-# describe the area and the size of the work.
+# describe the area and the type of work, using GitHub's standard labels.
 #
 # Idempotent enough to be re-run: labels are created with --force, so only the
 # issues themselves are duplicated if you run it twice. Use DRY_RUN=true first.
@@ -52,9 +52,11 @@ issue() {
   gh issue create --repo "$REPO" --title "$title" --body "$body" --label "$labels"
 }
 
-TRIVIAL="difficulty: trivial"
-MEDIUM="difficulty: medium"
-HIGH="difficulty: high"
+ENHANCEMENT="enhancement"
+BUG="bug"
+DOCUMENTATION="documentation"
+TESTING="testing"
+GFI="good first issue"
 CONTRACTS="area: contracts"
 SDK="area: sdk"
 BOT="area: solver-bot"
@@ -68,12 +70,10 @@ log "dry run:    $DRY_RUN"
 
 # ---------------------------------------------------------------- labels
 log "creating labels"
-label "$TRIVIAL" "Small, well-scoped task." "C2E0C6"
-label "$MEDIUM" "Multi-file task with some design decisions." "FBCA04"
-label "$HIGH" "Substantial change to settlement, storage, auth or TTL." "D93F0B"
+label "$TESTING" "Tests and test infrastructure" "C2E0C6"
 label "$CONTRACTS" "Soroban contracts under contracts/" "1D76DB"
 label "$SDK" "TypeScript SDK against Stellar RPC" "5319E7"
-label "$BOT" "Reference solver daemon" "0E8A16"
+label "$BOT" "Reference solver daemon on Stellar RPC" "0E8A16"
 label "$RPC" "Stellar RPC reads, simulations or events" "006B75"
 label "$AUTH" "Soroban authorization and auth-entry scoping" "B60205"
 label "$CI" "CI, tooling and release automation" "BFD4F2"
@@ -82,7 +82,7 @@ label "$DOCS" "Documentation" "BFDADC"
 # ------------------------------------------------------------- contracts
 log "creating contract issues"
 
-issue "perf(router): batch-read intent statuses for Stellar RPC indexers" "$TRIVIAL,$CONTRACTS,$RPC" <<'EOF'
+issue "perf(router): batch-read intent statuses for Stellar RPC indexers" "$ENHANCEMENT,$GFI,$CONTRACTS,$RPC" <<'EOF'
 ## Summary
 
 Reading the status of N intents currently costs N `simulateTransaction` round
@@ -111,7 +111,7 @@ Rust, Soroban SDK 26, `soroban_sdk::Vec`, Stellar RPC simulation
 Pagination and storage layout changes.
 EOF
 
-issue "test(router): property tests for the basis-point and slippage math" "$MEDIUM,$CONTRACTS" <<'EOF'
+issue "test(router): property tests for the basis-point and slippage math" "$TESTING,$CONTRACTS" <<'EOF'
 ## Summary
 
 The fee and slippage math (`mul_bps`, the shortfall calculation in
@@ -143,7 +143,7 @@ Rust, Soroban SDK 26, `proptest` (dev-dependency), `soroban_sdk::testutils`
 Changing the fee or slippage semantics themselves.
 EOF
 
-issue "feat(router): add an admin pause switch that halts settlement" "$MEDIUM,$CONTRACTS,$AUTH" <<'EOF'
+issue "feat(router): add an admin pause switch that halts settlement" "$ENHANCEMENT,$CONTRACTS,$AUTH" <<'EOF'
 ## Summary
 
 Add a pause flag, settable only by the admin, that makes `execute_intent`
@@ -174,7 +174,7 @@ Rust, Soroban SDK 26
 Time-bounded pauses, a pause guardian role, and multisig admin.
 EOF
 
-issue "feat(router): support partial fills on an intent" "$HIGH,$CONTRACTS,$AUTH" <<'EOF'
+issue "feat(router): support partial fills on an intent" "$ENHANCEMENT,$CONTRACTS,$AUTH" <<'EOF'
 ## Summary
 
 Allow a solver to fill part of an intent. Add an explicit `remaining_amount`
@@ -239,7 +239,7 @@ EOF
 # --------------------------------------------------------------------- sdk
 log "creating SDK issues"
 
-issue "docs(sdk): add JSDoc examples for every exported symbol" "$TRIVIAL,$SDK,$DOCS" <<'EOF'
+issue "docs(sdk): add JSDoc examples for every exported symbol" "$DOCUMENTATION,$GFI,$SDK,$DOCS" <<'EOF'
 ## Summary
 
 Every export in `packages/sdk/src/index.ts` should carry a JSDoc block with a
@@ -266,7 +266,7 @@ TypeScript, TSDoc, Vitest
 A generated API reference site.
 EOF
 
-issue "test(sdk): fuzz intent deserialization against malformed payloads" "$TRIVIAL,$SDK" <<'EOF'
+issue "test(sdk): fuzz intent deserialization against malformed payloads" "$TESTING,$GFI,$SDK" <<'EOF'
 ## Summary
 
 `deserializeIntent` is the entry point for untrusted feed data. Add a table of
@@ -297,7 +297,7 @@ TypeScript, `@stellar/stellar-sdk` `Address`, Vitest
 The contract-side decoding of the intent.
 EOF
 
-issue "feat(sdk): decode FillReceipt from a getTransaction result" "$MEDIUM,$SDK,$RPC" <<'EOF'
+issue "feat(sdk): decode FillReceipt from a getTransaction result" "$ENHANCEMENT,$SDK,$RPC" <<'EOF'
 ## Summary
 
 Add a helper that takes a settled transaction (or a Stellar RPC
@@ -325,7 +325,7 @@ TypeScript, `@stellar/stellar-sdk` XDR, Stellar RPC, Vitest
 Indexing historical fills.
 EOF
 
-issue "feat(sdk): sign and attach the trader's Soroban authorization entry" "$HIGH,$SDK,$AUTH" <<'EOF'
+issue "feat(sdk): sign and attach the trader's Soroban authorization entry" "$ENHANCEMENT,$SDK,$AUTH" <<'EOF'
 ## Summary
 
 Add a supported path for a trader to sign the Soroban authorization entry for
@@ -366,7 +366,7 @@ EOF
 # -------------------------------------------------------------- solver bot
 log "creating solver bot issues"
 
-issue "fix(solver-bot): back off exponentially on Stellar RPC rate limits" "$TRIVIAL,$BOT,$RPC" <<'EOF'
+issue "fix(solver-bot): back off exponentially on Stellar RPC rate limits" "$BUG,$GFI,$BOT,$RPC" <<'EOF'
 ## Summary
 
 When Stellar RPC returns a rate-limit or transient error, back off exponentially
@@ -393,7 +393,7 @@ TypeScript, Vitest, Stellar RPC
 Multi-endpoint failover.
 EOF
 
-issue "feat(solver-bot): persist seen intent hashes across restarts" "$MEDIUM,$BOT" <<'EOF'
+issue "feat(solver-bot): persist seen intent hashes across restarts" "$ENHANCEMENT,$BOT" <<'EOF'
 ## Summary
 
 Persist the watcher's dedupe set to disk so a restart does not re-evaluate
@@ -428,7 +428,7 @@ TypeScript, Vitest, Node `node:fs`
 A shared database across multiple solver instances.
 EOF
 
-issue "feat(solver-bot): price intents from Soroswap reserves instead of a static table" "$HIGH,$BOT,$RPC" <<'EOF'
+issue "feat(solver-bot): price intents from Soroswap reserves instead of a static table" "$ENHANCEMENT,$BOT,$RPC" <<'EOF'
 ## Summary
 
 Replace the static `TOKEN_PRICES` table with live pool reserves read from the
@@ -466,7 +466,7 @@ TypeScript, Stellar RPC, Soroswap router, Vitest
 Multi-hop routing and other Stellar DEXes.
 EOF
 
-issue "feat(solver-bot): support multiple concurrent solver keys" "$HIGH,$BOT,$AUTH" <<'EOF'
+issue "feat(solver-bot): support multiple concurrent solver keys" "$ENHANCEMENT,$BOT,$AUTH" <<'EOF'
 ## Summary
 
 Allow several solver accounts to be configured and rotated, so the bot does not
@@ -505,7 +505,7 @@ EOF
 # ----------------------------------------------------------------- ci/doc
 log "creating CI and documentation issues"
 
-issue "chore(ci): add a coverage job for the Soroban contracts" "$TRIVIAL,$CI" <<'EOF'
+issue "chore(ci): add a coverage job for the Soroban contracts" "$TESTING,$GFI,$CI" <<'EOF'
 ## Summary
 
 Run `cargo llvm-cov` in CI and publish the coverage summary as a job summary.
@@ -532,7 +532,7 @@ GitHub Actions, `cargo-llvm-cov`, Rust
 Enforcing a minimum coverage threshold.
 EOF
 
-issue "feat(ci): publish release WASM artifacts and attach contract ids to the tag" "$MEDIUM,$CI" <<'EOF'
+issue "feat(ci): publish release WASM artifacts and attach contract ids to the tag" "$ENHANCEMENT,$CI" <<'EOF'
 ## Summary
 
 Add a tag-triggered workflow that builds the release WASM, uploads it as a
@@ -561,7 +561,7 @@ GitHub Actions, `softprops/action-gh-release`, Rust, Stellar CLI
 Automatic deployment to mainnet.
 EOF
 
-issue "docs: write a Soroban authorization debugging guide" "$MEDIUM,$DOCS,$AUTH" <<'EOF'
+issue "docs: write a Soroban authorization debugging guide" "$DOCUMENTATION,$DOCS,$AUTH" <<'EOF'
 ## Summary
 
 Add a page that explains how to debug the most common Soroban authorization

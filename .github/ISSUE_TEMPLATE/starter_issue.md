@@ -1,8 +1,8 @@
 ---
-name: "Starter task (trivial)"
+name: "Starter task"
 about: A small, well-scoped task that is a good first contribution.
 title: "chore(<scope>): <short description>"
-labels: ["difficulty: trivial"]
+labels: ["good first issue"]
 ---
 
 ## Summary
